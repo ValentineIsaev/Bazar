@@ -1,6 +1,7 @@
 .env
 #bot/.env
 .venv
+.idea
 bot/cache/
 
 __pycache__/
