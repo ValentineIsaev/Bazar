@@ -1,0 +1,9 @@
+.env
+#bot/.env
+.venv
+bot/cache/
+
+__pycache__/
+*.py[cod]
+*.swp
+*.bak

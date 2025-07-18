@@ -1,0 +1,32 @@
+from ..messages import EDIT_PRODUCT_MESSAGE
+from ..fsm_states import EditProductStates
+from ..configs import EDIT_PARAM_PRODUCT_STATES
+from bot.handlers.handlers_import import *
+
+from bot.utils.message_utils import MessageSetting, send_message
+from bot.handlers.seller.product.configs import FieldConfig, ADD_FIELD_PRODUCT_CONFIGS
+from bot.utils.filters import CallbackFilter, TypeUserFilter
+from bot.configs.constants import UserTypes
+from bot.utils.keyboard_utils import parse_callback
+
+router = Router()
+
+
+@router.callback_query(CallbackFilter('product','edit_product'),
+                              TypeUserFilter(UserTypes.SELLER))
+async def edit_product_handler(cb: CallbackQuery, state: FSMContext):
+    _, _, action = parse_callback(cb.data)
+    new_message: MessageSetting
+    is_send_new = True
+    if action == 'start':
+        new_message, is_send_new = EDIT_PRODUCT_MESSAGE, False
+        await state.set_state(EditProductStates.choose_param)
+    else:
+        field_config: FieldConfig = ADD_FIELD_PRODUCT_CONFIGS.get(action)
+        if field_config is None:
+            raise ValueError(f'Wrong field name: {action}')
+        new_message = field_config.input_msg
+        new_state = EDIT_PARAM_PRODUCT_STATES.get(action)
+        await state.set_state(new_state)
+
+    await send_message(state, cb.bot, new_message, is_send_new)

@@ -1,0 +1,42 @@
+from bot.utils.keyboard_utils import create_callback_inline_keyboard, InlineButtonSetting, create_callback
+
+EDIT_PRODUCT_KEYBOARD = create_callback_inline_keyboard(InlineButtonSetting(text='Имя',
+                                                                            callback=create_callback(
+                                                                             'product',
+                                                                              'edit_product',
+                                                                                'name')),
+                                                        InlineButtonSetting(text='Цена',
+                                                                            callback=create_callback(
+                                                                                'product',
+                                                                                'edit_product',
+                                                                                'price'
+                                                                            )),
+                                                        InlineButtonSetting(text='Описание',
+                                                                            callback=create_callback('product',
+                                                                                            'edit_product',
+                                                                                                'description',
+                                                                                                     )),
+                                                        InlineButtonSetting(text='Каталог',
+                                                                            callback=create_callback('product',
+                                                                                                     'add',
+                                                                                                     'start')),
+                                                        InlineButtonSetting(text='Фото',
+                                                                            callback=create_callback(
+                                                                                'product',
+                                                                                'edit_product',
+                                                                                'photo'
+                                                                            ))
+                                                        )
+ADD_PRODUCT_COMPLETE_KEYBOARD = create_callback_inline_keyboard(InlineButtonSetting(text='Да',
+                                                                                          callback=create_callback(
+                                                                                            'product',
+                                                                                         'add',
+                                                                                            'send_product',
+                                                                                                    )),
+                                                                InlineButtonSetting(
+                                                                    text='Нет',
+                                                                    callback=create_callback(
+                                                                        'product',
+                                                                        'edit_product',
+                                                                        'start'
+                                                                    )))
