@@ -1,7 +1,7 @@
 from .messages import INVALID_PRICE_MESSAGE
 from ..models import ValidationResult
 
-from bot.utils.cache_utils import CacheMediaOperator
+from bot.utils.cache_utils.operators import CacheMediaOperator
 
 def validate_price(price: str) -> ValidationResult:
     try:

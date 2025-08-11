@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from bot.utils.cache_utils import CacheMediaOperator
+from bot.utils.cache_utils.operators import CacheMediaOperator
 
 
 class CatalogMenu:

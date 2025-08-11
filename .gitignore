@@ -1,4 +1,4 @@
-.env
+bot/.env
 #bot/.env
 .venv
 .idea

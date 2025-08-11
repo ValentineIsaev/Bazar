@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from abc import abstractmethod
 import shutil
 import os
@@ -7,32 +6,17 @@ import secrets
 from aiogram import Bot
 from aiogram.types import PhotoSize, Video
 
-from .exception import SingleUseCache
+from bot.utils.exception import SingleUseCache
 
 from bot.configs.configs import PROJECT_ROOT
 
-
-@dataclass
-class CacheObj:
-    path: str
-
-
-@dataclass
-class CacheMediaObj(CacheObj):
-    TYPE_PHOTO = 'photo'
-    TYPE_VIDEO = 'video'
-
-    type_media: str
+from .cache_obj import CacheMediaObj, CacheObj
 
 
 class CacheOperator:
     def __init__(self):
         self.__cache_id: str = str(self.__generate_cache_id())
         self._cache_dir: str = os.path.join(self._create_cache_path(), self.__cache_id)
-
-    @abstractmethod
-    def _create_cache_path(self) -> str:
-        pass
 
     @staticmethod
     def __generate_cache_id():
@@ -49,9 +33,8 @@ class CacheOperator:
     def clear_cache(self) -> None:
         shutil.rmtree(self._cache_dir)
 
-    @property
     @abstractmethod
-    def data(self):
+    def get_data(self) -> CacheObj | tuple[CacheObj] | None:
         pass
 
 
@@ -64,11 +47,7 @@ class CacheMediaOperator(CacheOperator):
         super().__init__()
         self.__media: CacheMediaObj | tuple[CacheMediaObj] | None = None
 
-    def _create_cache_path(self) -> str:
-        return os.path.join(PROJECT_ROOT, self.CACHE_DIR)
-
-    @property
-    def data(self):
+    def get_data(self):
         return self.__media
 
     async def __save_media_file(self, media: PhotoSize | Video, bot: Bot) -> CacheMediaObj:

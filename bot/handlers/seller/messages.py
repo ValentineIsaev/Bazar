@@ -1,6 +1,8 @@
 from .keyboards import ADD_PRODUCT_COMPLETE_KEYBOARD, EDIT_PRODUCT_KEYBOARD
 from bot.utils.message_utils import MessageSetting
 
+START_MESSAGE = 'Привет, ?. Твой профиль: \n\nРейтинг: ?\nДеньги: ?'
+
 EDIT_PRODUCT_MESSAGE = MessageSetting(text='Что вы хотите редактировать?', keyboard=EDIT_PRODUCT_KEYBOARD)
 
 ADD_PRODUCT_FORM_TEXT = 'Название: ?\nКаталог: ?\nОписание: ?\n\nЦена: ?'

@@ -7,8 +7,8 @@ from bot.configs.constants import UserTypes, ParamFSM, PASS_CALLBACK
 from bot.utils.message_utils import MessageSetting, insert_text, send_message
 from bot.utils.helper import get_data_state
 
-from .messages import START_MESSAGE
-from .keyboards import MENU_KEYBOARD
+from ..messages import START_MESSAGE
+from ..keyboards import MENU_KEYBOARD
 
 router = Router()
 
