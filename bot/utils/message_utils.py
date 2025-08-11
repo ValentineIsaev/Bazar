@@ -21,6 +21,17 @@ class MessageSetting:
         self.media_cache_operator = media_cache_operator
 
 
+class TextTemplate:
+    def __init__(self, text: str):
+        self.__text = text
+
+    def insert(self, new_value: tuple| list) -> str:
+        parts = self.__text.split('?')
+        return ''.join(
+            (part if i > len(new_value)-1 else part + str(new_value[i])) for i, part in enumerate(parts))
+
+
+
 async def delete_bot_message(state: FSMContext, bot: Bot) -> None:
     bot_message: Message
     (bot_message,) = await get_data_state(state, ParamFSM.BotMessagesData.BOT_MESSAGE)
@@ -40,12 +51,6 @@ async def send_message(state: FSMContext, bot: Bot, data: MessageSetting, is_sen
         await bot.edit_message_text(text=data.text, chat_id=chat_id,
                                     message_id=bot_msg.message_id, parse_mode=data.parse_mode,
                                     reply_markup=data.keyboard)
-
-
-def insert_text(text: str, new_value: tuple| list):
-    parts = text.split('?')
-    return ''.join(
-        (part if i > len(new_value)-1 else part + str(new_value[i])) for i, part in enumerate(parts))
 
 
 def create_list_message(values: tuple[...] | list[...], columns: int, partition: str= 5*'\t') -> str:

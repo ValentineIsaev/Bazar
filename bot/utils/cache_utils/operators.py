@@ -1,6 +1,6 @@
 from abc import abstractmethod
 import shutil
-import os
+from pathlib import Path
 import secrets
 
 from aiogram import Bot
@@ -8,47 +8,53 @@ from aiogram.types import PhotoSize, Video
 
 from bot.utils.exception import SingleUseCache
 
-from bot.configs.configs import PROJECT_ROOT
+from bot.configs.configs import CachePath
 
 from .cache_obj import CacheMediaObj, CacheObj
 
 
 class CacheOperator:
     def __init__(self):
-        self.__cache_id: str = str(self.__generate_cache_id())
-        self._cache_dir: str = os.path.join(self._create_cache_path(), self.__cache_id)
+        self._data: None | CacheObj | tuple[CacheObj] = None
+        self.__cache_id: int = self.__generate_cache_id()
+
+        self._cache_path: Path = self._create_cache_dir()
+
+    @property
+    @abstractmethod
+    def _cache_dir(self) -> Path:
+        pass
 
     @staticmethod
     def __generate_cache_id():
         return secrets.randbelow(9_000_000_000) + 1_000_000_000
 
+    def _create_cache_dir(self) -> Path:
+        path: Path = self._cache_dir / str(self.__cache_id)
+        path.mkdir(exist_ok=True)
+        return path
+
     @abstractmethod
     def caching_data(self, data, *args, **kwargs) -> None:
         pass
 
-    def _create_cache_dir(self):
-        if not os.path.isdir(self._cache_dir):
-            os.mkdir(self._cache_dir)
+    def get_cache(self) -> CacheObj | tuple[CacheObj] | None:
+        return self._data
 
     def clear_cache(self) -> None:
         shutil.rmtree(self._cache_dir)
 
-    @abstractmethod
-    def get_data(self) -> CacheObj | tuple[CacheObj] | None:
-        pass
-
 
 class CacheMediaOperator(CacheOperator):
-    CACHE_DIR = os.path.join('cache', 'media_cache')
     VIDEO_EXT = '.mp4'
     PHOTO_EXT = '.jpg'
 
     def __init__(self):
         super().__init__()
-        self.__media: CacheMediaObj | tuple[CacheMediaObj] | None = None
 
-    def get_data(self):
-        return self.__media
+    @property
+    def _cache_dir(self) -> Path:
+        return CachePath.CACHE_MEDIA_DIR
 
     async def __save_media_file(self, media: PhotoSize | Video, bot: Bot) -> CacheMediaObj:
         ext = ''
@@ -63,7 +69,7 @@ class CacheMediaOperator(CacheOperator):
             ext = self.VIDEO_EXT
             type_media = CacheMediaObj.TYPE_VIDEO
 
-        destination = os.path.join(self._cache_dir, f'{file_id}{ext}')
+        destination: Path = self._cache_path / f'{file_id}{ext}'
         await bot.download_file(file.file_path, destination)
 
         return CacheMediaObj(destination, type_media)
@@ -75,15 +81,16 @@ class CacheMediaOperator(CacheOperator):
         :param media: media for caching
         :return: None, but path and other saved in class
         """
-        if self.__media is not None:
+        if self._data is not None:
             raise SingleUseCache()
 
         self._create_cache_dir()
 
         if isinstance(media, list):
-            self.__media = []
+            data = []
             for media_file in media:
                 cache_obj = await self.__save_media_file(media_file, bot)
-                self.__media.append(cache_obj)
+                data.append(cache_obj)
+            self._data = tuple(data)
         else:
-            self.__media = await self.__save_media_file(media, bot)
+            self._data = await self.__save_media_file(media, bot)

@@ -1,9 +1,9 @@
-from ..messages import EDIT_PRODUCT_MESSAGE
-from ..fsm_states import EditProductStates, EDIT_PARAM_PRODUCT_STATES
+from bot.handlers.seller.templates.messages import EDIT_PRODUCT_MESSAGE
+from bot.handlers.seller.templates.fsm_states import EditProductStates, EDIT_PARAM_PRODUCT_STATES
 from bot.handlers.handlers_import import *
 
 from bot.utils.message_utils import MessageSetting, send_message
-from ..configs import FieldConfig, ADD_FIELD_PRODUCT_CONFIGS
+from bot.handlers.seller.templates.configs import FieldConfig, ADD_FIELD_PRODUCT_CONFIGS
 from bot.utils.filters import CallbackFilter, TypeUserFilter
 from bot.configs.constants import UserTypes
 from bot.utils.keyboard_utils import parse_callback

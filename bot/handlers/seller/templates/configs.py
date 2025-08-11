@@ -3,8 +3,8 @@ from typing import Callable
 
 from aiogram.fsm.state import State
 
-from .messages import *
-from .fsm_states import EditProductStates, AddProductStates, SellerStates
+from bot.handlers.seller.templates.messages import *
+from bot.handlers.seller.templates.fsm_states import EditProductStates, AddProductStates, SellerStates
 from bot.services.product.validation_input_product import validate_price, validate_media
 
 BASE_STATE = SellerStates.seller_menu

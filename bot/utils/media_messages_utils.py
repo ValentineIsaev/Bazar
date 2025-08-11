@@ -59,9 +59,13 @@ async def make_cache_media_operator(media_msg: list[Message] | Message, bot: Bot
     return cache_media
 
 
+async def send_cached_media():
+    pass
+
+
 async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) -> None:
     (chat_id,) = await get_data_state(state, ParamFSM.BotMessagesData.CHAT_ID)
-    media: CacheMediaObj = data.media_cache_operator.data
+    media: CacheMediaObj = data.media_cache_operator.get_cache
     if isinstance(media, CacheMediaObj):
         if media.type_media == CacheMediaObj.TYPE_PHOTO:
             photo = FSInputFile(media.path)

@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -15,4 +16,7 @@ def load_config(key: str): # Нуждается в переписывании
     return config
 
 TOKEN = load_config('BOT_TOKEN')
-MEDIA_CACHE_DIR = load_config('CACHE_MEDIA_DIR')
+
+@dataclass
+class CachePath:
+    CACHE_MEDIA_DIR = Path(load_config('CACHE_MEDIA_DIR'))

@@ -2,7 +2,7 @@ bot/.env
 #bot/.env
 .venv
 .idea
-bot/cache/
+bot/cache/*/*
 
 __pycache__/
 *.py[cod]

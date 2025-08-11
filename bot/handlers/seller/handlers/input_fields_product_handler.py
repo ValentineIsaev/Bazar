@@ -4,9 +4,9 @@ from aiogram import F
 from aiogram.filters import StateFilter, or_f
 
 from ..helpers import *
-from ..fsm_states import *
-from ..messages import *
-from ..configs import BASE_STATE
+from bot.handlers.seller.templates.fsm_states import *
+from bot.handlers.seller.templates.messages import *
+from bot.handlers.seller.templates.configs import BASE_STATE
 
 from bot.handlers.common.catalog import create_catalog_message
 from bot.configs.constants import UserTypes, PASS_CALLBACK
@@ -87,7 +87,7 @@ async def add_description(msg: Message, state: FSMContext):
 async def add_photo(msg: Message, state: FSMContext):
     album = await input_media_album(state, msg, '/skip', PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE)
     if album is not None:
-        user_data = make_cache_media_operator(msg, msg.bot)
+        user_data = await make_cache_media_operator(msg, msg.bot)
         await handler_input_product_field(msg, state, 'photo', user_data)
 
 
