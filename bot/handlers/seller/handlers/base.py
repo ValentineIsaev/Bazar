@@ -4,7 +4,7 @@ from bot.handlers.handlers_import import *
 from bot.handlers.seller.templates.configs import BASE_STATE
 
 from bot.configs.constants import UserTypes, ParamFSM, PASS_CALLBACK
-from bot.utils.message_utils import MessageSetting, send_message
+from bot.utils.message_utils.message_utils import MessageSetting, send_message
 from bot.utils.helper import get_data_state
 
 from bot.handlers.seller.templates.messages import START_MESSAGE

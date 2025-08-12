@@ -1,5 +1,4 @@
-from bot.utils.keyboard_utils import *
-from bot.utils.message_utils import *
+from bot.utils.message_utils.message_utils import *
 
 
 def insert_test():

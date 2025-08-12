@@ -1,7 +1,5 @@
-from aiogram.filters import StateFilter
-
 from bot.configs.constants import ParamFSM
-from bot.utils.message_utils import send_message
+from bot.utils.message_utils.message_utils import send_message
 
 from .messages import *
 from ..handlers_import import *

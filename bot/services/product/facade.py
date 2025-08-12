@@ -3,7 +3,7 @@ from typing import Callable
 from .validation_input_product import ValidationResult
 from .models import Product
 
-from bot.utils.message_utils import MessageSetting
+from bot.utils.message_utils.message_utils import MessageSetting
 
 class AddProductOperator:
     def __init__(self):

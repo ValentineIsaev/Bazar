@@ -2,7 +2,6 @@ from aiogram.fsm.state import State, StatesGroup
 
 from ..handlers_import import *
 
-from bot.utils.message_utils import send_message
 from bot.configs.constants import ParamFSM, UserTypes
 
 buyer_router = Router()

@@ -1,4 +1,4 @@
-from bot.utils.message_utils import MessageSetting
+from bot.utils.message_utils.message_utils import MessageSetting
 from bot.configs.constants import UserTypes
 from ..buyer.messages import DEFAULT_MESSAGE
 

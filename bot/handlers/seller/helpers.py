@@ -12,8 +12,8 @@ from bot.services.product.models import Product
 from bot.utils.helper import get_data_state
 from bot.configs.constants import ParamFSM
 from bot.services.product.facade import AddProductOperator
-from bot.utils.message_utils import MessageSetting, send_message, delete_bot_message
-from bot.utils.media_messages_utils import send_media_message
+from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
+from bot.utils.message_utils.media_messages_utils import send_media_message
 
 
 async def add_field_product(bot: Bot, state: FSMContext, config: FieldConfig) -> tuple[MessageSetting | None, State]:

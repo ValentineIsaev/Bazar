@@ -10,12 +10,12 @@ from bot.handlers.seller.templates.configs import BASE_STATE
 
 from bot.handlers.common.catalog import create_catalog_message
 from bot.configs.constants import UserTypes, PASS_CALLBACK
-from bot.utils.message_utils import *
+from bot.utils.message_utils.message_utils import *
 from bot.utils.exception import UnknownCallback
 from bot.utils.helper import get_data_state
-from bot.utils.keyboard_utils import *
+from bot.utils.message_utils.keyboard_utils import *
 from bot.utils.filters import CallbackFilter, TypeUserFilter
-from bot.utils.media_messages_utils import make_cache_media_operator, input_media_album
+from bot.utils.message_utils.media_messages_utils import make_cache_media_operator, input_media_album
 from bot.services.product.services import ProductService
 from bot.services.product.models import CatalogMenu
 from bot.services.product.facade import AddProductOperator

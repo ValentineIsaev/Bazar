@@ -1,35 +1,13 @@
 import math
-from dataclasses import dataclass
 
 from aiogram.fsm.context import FSMContext
 from aiogram import Bot
-from aiogram.types import inline_keyboard_markup, Message
+from aiogram.types import Message
 
-from bot.utils.cache_utils.operators import CacheMediaOperator
+from bot.utils.message_utils.message_setting_classes import MessageSetting
 
 from bot.configs.constants import ParamFSM
 from bot.utils.helper import get_data_state
-
-
-@dataclass
-class MessageSetting:
-    def __init__(self, text: str, keyboard: inline_keyboard_markup=None, parse_mode:str=None,
-                 media_cache_operator: CacheMediaOperator=None):
-        self.text = text
-        self.keyboard = keyboard
-        self.parse_mode = parse_mode
-        self.media_cache_operator = media_cache_operator
-
-
-class TextTemplate:
-    def __init__(self, text: str):
-        self.__text = text
-
-    def insert(self, new_value: tuple| list) -> str:
-        parts = self.__text.split('?')
-        return ''.join(
-            (part if i > len(new_value)-1 else part + str(new_value[i])) for i, part in enumerate(parts))
-
 
 
 async def delete_bot_message(state: FSMContext, bot: Bot) -> None:

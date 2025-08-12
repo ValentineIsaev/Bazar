@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from bot.configs.constants import ParamFSM
-from bot.utils.keyboard_utils import parse_callback
+from bot.utils.message_utils.keyboard_utils import parse_callback
 
 class TypeUserFilter(BaseFilter):
     def __init__(self, type_user: str):

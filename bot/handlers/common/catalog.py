@@ -4,9 +4,9 @@ from aiogram.types import CallbackQuery
 
 from bot.configs.constants import ParamFSM, ROW_BUTTON_CATALOG_MENU
 from bot.services.product.models import CatalogMenu
-from bot.utils.message_utils import create_list_message, MessageSetting, send_message
-from bot.utils.keyboard_utils import (generate_number_buttons, create_callback_inline_keyboard, parse_callback,
-                                      add_callback_inline_keyboard)
+from bot.utils.message_utils.message_utils import create_list_message, MessageSetting, send_message
+from bot.utils.message_utils.keyboard_utils import (generate_number_buttons, create_callback_inline_keyboard, parse_callback,
+                                                    add_callback_inline_keyboard)
 from bot.utils.filters import CallbackFilter
 
 from .keyboard import CATALOG_MENU_NEXT, CATALOG_MENU_BACK
