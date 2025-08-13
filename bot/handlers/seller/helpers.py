@@ -12,7 +12,7 @@ from bot.utils.helper import get_data_state
 from bot.configs.constants import ParamFSM
 from bot.services.product.models import InputProduct
 from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
-from bot.utils.message_utils.media_messages_utils import send_media_message
+from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message
 
 
 async def add_field_product(bot: Bot, state: FSMContext, config: FieldConfig) -> tuple[MessageSetting | None, State]:
@@ -32,6 +32,9 @@ async def handler_input_product_field(msg: Message, state: FSMContext, field_nam
         await msg.delete()
 
     product: InputProduct = await state.get_value(ParamFSM.SellerData.ADD_PRODUCT_OPERATOR)
+    if product is None:
+        product = InputProduct()
+        await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product})
 
     filed_config: FieldConfig = ADD_FIELD_PRODUCT_CONFIGS[field_name]
     result = product.add_value(field_name, value)
@@ -65,7 +68,7 @@ async def complete_product(state: FSMContext, bot: Bot) -> tuple[None, State]:
                                                                           product.description,
                                                                           product.price)),
                                      cache_media=product.media)
-    await send_media_message(state, bot, product_message)
+    await send_cached_media_message(state, bot, product_message)
     await send_message(state, bot, COMPLETE_ADD_PRODUCT_MESSAGE)
 
     return None, AddProductStates.user_checking

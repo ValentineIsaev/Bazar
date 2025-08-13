@@ -21,8 +21,8 @@ async def input_media_album(state: FSMContext, msg: Message,  stop_text: str,
         media_list = []
         await state.update_data(**{ParamFSM.BotMessagesData.INPUTS_MEDIA: media_list})
 
-    if len(media_list) > 0:
-        await delete_bot_message(state, msg.bot)
+    # if len(media_list) > 0:
+    #     await delete_bot_message(state, msg.bot)
     if msg.text == stop_text:
         await state.update_data(**{ParamFSM.BotMessagesData.INPUTS_MEDIA: None})
         return media_list
@@ -32,37 +32,6 @@ async def input_media_album(state: FSMContext, msg: Message,  stop_text: str,
         await send_message(state, msg.bot, answer_message, True)
 
     return None
-
-
-
-async def make_cache_media_operator(media_msg: list[Message] | Message, bot: Bot) -> CacheMediaOperator:
-    """
-    This func create cache obj and caching media data from user message
-    :param media_msg: User input media
-    :param bot: aiogram bot for caching and download media file
-    :return: CacheMediaOperator
-    """
-    cache_media = CacheMediaOperator()
-    if isinstance(media_msg, list):
-        media = []
-        for msg in media_msg:
-            if msg.photo is not None:
-                media.append(msg.photo[-1])
-            elif msg.video is not None:
-                media.append(msg.video)
-
-        await cache_media.caching_data(media, bot)
-        for msg in media_msg:
-            await msg.delete()
-
-    elif isinstance(media_msg, Message):
-        if media_msg.photo is not None:
-            await cache_media.caching_data(media_msg.photo[-1], bot)
-        elif media_msg.video is not None:
-            await cache_media.caching_data(media_msg.video, bot)
-        await media_msg.delete()
-
-    return cache_media
 
 
 async def send_cached_media_message(state: FSMContext, bot: Bot, data: MessageSetting) -> None:

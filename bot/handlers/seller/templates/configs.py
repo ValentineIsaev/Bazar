@@ -21,6 +21,6 @@ ADD_FIELD_PRODUCT_CONFIGS = {
     'catalog': FieldConfig(next_field='name', next_state=AddProductStates.add_name),
     'price': FieldConfig(INPUT_PRICE_PRODUCT_MESSAGE, None,
                          EditProductStates.complete_edit, is_end_field=True),
-    'description': FieldConfig(INPUT_DESCRIPTION_MESSAGE, 'photo', AddProductStates.add_photo),
-    'photo': FieldConfig(INPUT_PHOTO_PRODUCT_MESSAGE, 'price', AddProductStates.add_price)
+    'description': FieldConfig(INPUT_DESCRIPTION_MESSAGE, 'media', AddProductStates.add_photo),
+    'media': FieldConfig(INPUT_PHOTO_PRODUCT_MESSAGE, 'price', AddProductStates.add_price)
 }

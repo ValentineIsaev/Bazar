@@ -4,8 +4,8 @@ from aiogram import F
 from aiogram.filters import StateFilter, or_f
 
 from ..helpers import *
-from bot.handlers.seller.templates.fsm_states import *
 from bot.handlers.seller.templates.messages import *
+from bot.handlers.seller.templates.fsm_states import *
 from bot.handlers.seller.templates.configs import BASE_STATE
 
 from bot.handlers.common.catalog import create_catalog_message
@@ -15,10 +15,10 @@ from bot.utils.exception import UnknownCallback
 from bot.utils.helper import get_data_state
 from bot.utils.message_utils.keyboard_utils import *
 from bot.utils.filters import CallbackFilter, TypeUserFilter
-from bot.utils.message_utils.media_messages_utils import make_cache_media_operator, input_media_album
+from bot.utils.message_utils.media_messages_utils import input_media_album
+from bot.utils.cache_utils.cache_utils import caching_media
 from bot.services.product.services import ProductService
 from bot.services.product.models import CatalogMenu
-from bot.services.product.models import InputProduct
 
 
 router = Router()
@@ -34,8 +34,6 @@ async def process_product_actions(cb: CallbackQuery, state: FSMContext):
         now_state: str = await state.get_state()
         if not now_state.startswith(EditProductStates.group_name):
             await state.set_state(AddProductStates.choose_catalog)
-            product_form = InputProduct()
-            await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product_form})
 
         catalog_menu = ProductService.get_product_catalog()
         await state.update_data(**{ParamFSM.ProductData.CATALOG_MENU: catalog_menu,
@@ -85,11 +83,10 @@ async def add_description(msg: Message, state: FSMContext):
                      F.media_group_id,
                      Command('skip')))
 async def add_photo(msg: Message, state: FSMContext):
-    # album = await input_media_album(state, msg, '/skip', PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE)
-    # if album is not None:
-    #     user_data = await make_cache_media_operator(msg, msg.bot)
-    #     await handler_input_product_field(msg, state, 'photo', user_data)
-    await state.set_state(AddProductStates.add_price)
+    album = await input_media_album(state, msg, '/skip', PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE)
+    if album is not None:
+        user_data = await caching_media(msg, msg.bot)
+        await handler_input_product_field(msg, state, 'media', user_data, False)
 
 
 @router.message(StateFilter(AddProductStates.add_price, EditProductStates.EditParam.edit_price))

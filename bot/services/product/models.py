@@ -45,35 +45,36 @@ class ValidationResult:
 @dataclass()
 class Product:
     name: str | None = None
-    _price: str | None = None
+    price: str | None = None
     catalog: str | None = None
     description: str | None = None
-    _photo: CacheMediaOperator | None = None
+    media: CacheMediaOperator | None = None
 
-    @property
-    def price(self):
-        return self.price
-
-    @property
-    def media(self):
-        return self._photo
 
 class InputProduct(Product):
     def __init__(self):
         super().__init__()
 
-    @staticmethod
-    @Product.price.setter
-    def price(price: str) -> ValidationResult:
+    @property
+    def price(self):
+        return self._price
+
+    @property
+    def media(self):
+        return self._media
+
+    @price.setter
+    def price(self, price: str) -> ValidationResult:
         try:
             float(price)
+            self._price = price
             return ValidationResult(is_validate=True)
         except ValueError:
             return ValidationResult(is_validate=False, error_message=INVALID_PRICE_MESSAGE)
 
-    @staticmethod
-    @Product.media.setter
-    def media(media: CacheMediaOperator) -> ValidationResult:
+    @media.setter
+    def media(self, media: CacheMediaOperator) -> ValidationResult:
+        self._media = media
         return ValidationResult(is_validate=True)
 
     def add_value(self, field_name: str, value) -> None | MessageSetting:
@@ -85,11 +86,13 @@ class InputProduct(Product):
         None - validate is successfully or MessageSetting - validation error
         """
 
-        prop = getattr(self, field_name)
+        prop = getattr(type(self), field_name)
         if isinstance(prop, property):
-            result: ValidationResult = prop.fset(value)
+            result: ValidationResult = prop.fset(self, value)
             if not result.is_validate:
                 return result.error_message
         else:
             setattr(self, field_name, value)
         return None
+
+print(InputProduct().add_value('price', 56))
