@@ -31,6 +31,8 @@ async def input_media_album(state: FSMContext, msg: Message,  stop_text: str,
 
         await send_message(state, msg.bot, answer_message, True)
 
+    return None
+
 
 
 async def make_cache_media_operator(media_msg: list[Message] | Message, bot: Bot) -> CacheMediaOperator:

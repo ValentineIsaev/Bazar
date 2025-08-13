@@ -8,10 +8,9 @@ from bot.handlers.seller.templates.configs import FieldConfig, ADD_FIELD_PRODUCT
 from bot.handlers.seller.templates.fsm_states import AddProductStates
 
 from bot.handlers.seller.templates.fsm_states import EditProductStates
-from bot.services.product.models import Product
 from bot.utils.helper import get_data_state
 from bot.configs.constants import ParamFSM
-from bot.services.product.facade import AddProductOperator
+from bot.services.product.models import InputProduct
 from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
 from bot.utils.message_utils.media_messages_utils import send_media_message
 
@@ -32,10 +31,10 @@ async def handler_input_product_field(msg: Message, state: FSMContext, field_nam
     if is_delete_user_message:
         await msg.delete()
 
-    product: AddProductOperator = await state.get_value(ParamFSM.SellerData.ADD_PRODUCT_OPERATOR)
+    product: InputProduct = await state.get_value(ParamFSM.SellerData.ADD_PRODUCT_OPERATOR)
 
     filed_config: FieldConfig = ADD_FIELD_PRODUCT_CONFIGS[field_name]
-    result = product.add_value(field_name, value, filed_config.validate_func)
+    result = product.add_value(field_name, value)
 
     new_message: MessageSetting | None = None
     if result is None:
@@ -58,15 +57,14 @@ async def handler_input_product_field(msg: Message, state: FSMContext, field_nam
 async def complete_product(state: FSMContext, bot: Bot) -> tuple[None, State]:
     await delete_bot_message(state, bot)
 
-    product_form: Product; product_operator: AddProductOperator
-    (product_operator, chat_id) = await get_data_state(state, ParamFSM.SellerData.ADD_PRODUCT_OPERATOR,
+    product: InputProduct
+    (product, chat_id) = await get_data_state(state, ParamFSM.SellerData.ADD_PRODUCT_OPERATOR,
                                                        ParamFSM.BotMessagesData.CHAT_ID)
-    product_form = product_operator.product
-    product_message = MessageSetting(text=ADD_PRODUCT_FORM_TEXT.insert(product_form.name,
-                                                                          product_form.catalog,
-                                                                          product_form.description,
-                                                                          product_form.price),
-                                     media_cache_operator=product_form.photo)
+    product_message = MessageSetting(text=ADD_PRODUCT_FORM_TEXT.insert((product.name,
+                                                                          product.catalog,
+                                                                          product.description,
+                                                                          product.price)),
+                                     cache_media=product.media)
     await send_media_message(state, bot, product_message)
     await send_message(state, bot, COMPLETE_ADD_PRODUCT_MESSAGE)
 

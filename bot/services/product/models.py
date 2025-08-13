@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
+from bot.services.product.messages import INVALID_PRICE_MESSAGE
+
 from bot.utils.cache_utils.operators import CacheMediaOperator
+from bot.utils.message_utils.message_utils import MessageSetting
 
 
 class CatalogMenu:
@@ -34,9 +37,59 @@ class CatalogMenu:
 
 
 @dataclass()
+class ValidationResult:
+    is_validate: bool
+    error_message: MessageSetting | None = None
+
+
+@dataclass()
 class Product:
     name: str | None = None
-    price: str | None = None
+    _price: str | None = None
     catalog: str | None = None
     description: str | None = None
-    photo: CacheMediaOperator | None = None
+    _photo: CacheMediaOperator | None = None
+
+    @property
+    def price(self):
+        return self.price
+
+    @property
+    def media(self):
+        return self._photo
+
+class InputProduct(Product):
+    def __init__(self):
+        super().__init__()
+
+    @staticmethod
+    @Product.price.setter
+    def price(price: str) -> ValidationResult:
+        try:
+            float(price)
+            return ValidationResult(is_validate=True)
+        except ValueError:
+            return ValidationResult(is_validate=False, error_message=INVALID_PRICE_MESSAGE)
+
+    @staticmethod
+    @Product.media.setter
+    def media(media: CacheMediaOperator) -> ValidationResult:
+        return ValidationResult(is_validate=True)
+
+    def add_value(self, field_name: str, value) -> None | MessageSetting:
+        """
+        Function for update and validate data in product form
+        :param field_name: name property of product form class
+        :param value: new value product class
+        :return:
+        None - validate is successfully or MessageSetting - validation error
+        """
+
+        prop = getattr(self, field_name)
+        if isinstance(prop, property):
+            result: ValidationResult = prop.fset(value)
+            if not result.is_validate:
+                return result.error_message
+        else:
+            setattr(self, field_name, value)
+        return None

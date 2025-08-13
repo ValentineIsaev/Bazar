@@ -1,5 +1,5 @@
 from bot.handlers.seller.templates.keyboards import ADD_PRODUCT_COMPLETE_KEYBOARD, EDIT_PRODUCT_KEYBOARD
-from bot.utils.message_utils.message_utils import MessageSetting, TextTemplate
+from bot.utils.message_utils.message_setting_classes import MessageSetting, TextTemplate
 
 START_MESSAGE = TextTemplate('Привет, ?. Твой профиль: \n\nРейтинг: ?\nДеньги: ?')
 
