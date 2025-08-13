@@ -1,6 +1,8 @@
 from aiogram import Bot
-from aiogram.types import Message, FSInputFile, PhotoSize, Video
+from aiogram.types import Message, FSInputFile, PhotoSize, Video, InputMediaPhoto, InputMediaVideo
 from aiogram.fsm.context import FSMContext
+
+from ..message_utils.message_setting_classes import TypesMedia
 
 from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
 from bot.utils.helper import get_data_state
@@ -80,25 +82,46 @@ async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) 
     if data.media is None:
         raise ValueError('Media data is clear!')
 
-    def add_media_from_path() -> FSInputFile:
-        if not data.media.path.exists():
-            raise ValueError(f'File \'{data.media}\' is not exits')
-        return FSInputFile(data.media.path)
-
-    def add_media_from_server():
-        pass
-
-    if isinstance(data.media, tuple):
-        pass
-    elif isinstance(data.media, MediaSetting):
+    def input_file() -> str | FSInputFile:
         if data.media.file_id is not None:
-            pass
+            _file = data.media.file_id
         elif data.media.path is not None:
-            file = add_media_from_path()
+            if not data.media.path.exists():
+                raise ValueError(f'File \'{data.media}\' is not exits')
+            _file = FSInputFile(data.media.path)
+        else:
+            raise ValueError('Media setting is clear!')
 
-        if data.media.type_media == data.media.TYPE_PHOTO:
+        return _file
+
+    media_message = None
+    if isinstance(data.media, tuple):
+        media_group = []
+        for media in data.media:
+            file = input_file()
+            if len(media_group) == 0 and data.text is not None:
+                caption = data.text
+            else:
+                caption = media.caption
+
+            if media.type_media == TypesMedia.TYPE_PHOTO:
+                media_group.append(InputMediaPhoto(media=file, caption=caption))
+            elif media.type_media == TypesMedia.TYPE_VIDEO:
+                media_group.append(InputMediaVideo(media=file, caption=caption))
+
+        media_message = await bot.send_media_group(chat_id, media=media_group)
+
+    elif isinstance(data.media, MediaSetting):
+        file = input_file()
+
+        if data.media.type_media == TypesMedia.TYPE_PHOTO:
             media_message = await bot.send_photo(chat_id, file, caption=data.text,
                                                  parse_mode=data.parse_mode,
                                                  reply_markup=data.keyboard)
+        elif data.media.type_media == TypesMedia.TYPE_VIDEO:
+            media_message = await bot.send_video(chat_id, file, caption=data.text,
+                                                 parse_mode=data.parse_mode,
+                                                 reply_markup=data.keyboard)
 
-    await state.update_data(**{ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE: media_message})
+    if media_message is not None:
+        await state.update_data(**{ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE: media_message})

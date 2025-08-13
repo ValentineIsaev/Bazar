@@ -1,20 +1,24 @@
 from dataclasses import dataclass
 from pathlib import Path
+from enum import Enum
 
 from aiogram.types import inline_keyboard_markup
 
 from bot.utils.cache_utils.cache_obj import CacheMediaObj
 
 
-@dataclass
-class MediaSetting:
+class TypesMedia(Enum):
     TYPE_PHOTO = 'photo'
     TYPE_VIDEO = 'video'
 
+@dataclass
+class MediaSetting:
     type_media: str
 
     file_id: str = None
     path: Path = None
+
+    caption: str = None
 
 
 @dataclass

@@ -9,7 +9,4 @@ class CacheObj:
 
 @dataclass
 class CacheMediaObj(CacheObj):
-    TYPE_PHOTO = 'photo'
-    TYPE_VIDEO = 'video'
-
     type_media: str
