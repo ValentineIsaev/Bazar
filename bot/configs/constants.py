@@ -16,7 +16,9 @@ class ParamFSM:
         CHAT_ID = 'chat_id'
         BOT_MESSAGE = 'bot_message'
         BOT_MEDIA_MESSAGE = 'media_message'
-        INPUTS_MEDIA = 'input_media'
+        class InputMediaAlbum:
+            INPUTS_MEDIA = 'input_media'
+            BOTS_MESSAGES = 'answer_media_bots_messages'
     class ProductData:
         CATALOG_MENU = 'catalog_menu'
         PRODUCT = 'product'
