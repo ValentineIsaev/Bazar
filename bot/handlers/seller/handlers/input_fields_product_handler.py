@@ -85,7 +85,7 @@ async def add_description(msg: Message, state: FSMContext):
 async def add_photo(msg: Message, state: FSMContext):
     album = await input_media_album(state, msg, '/skip', PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE)
     if album is not None:
-        user_data = await caching_media(msg, msg.bot)
+        user_data = await caching_media(album, msg.bot)
         await handler_input_product_field(msg, state, 'media', user_data, False)
 
 

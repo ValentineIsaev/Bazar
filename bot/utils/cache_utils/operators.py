@@ -7,6 +7,7 @@ from aiogram import Bot
 from aiogram.types import PhotoSize, Video
 
 from bot.utils.exception import SingleUseCache
+from bot.utils.message_utils.message_setting_classes import TypesMedia
 
 from bot.configs.configs import CachePath
 
@@ -64,10 +65,10 @@ class CacheMediaOperator(CacheOperator):
 
         if isinstance(media, PhotoSize):
             ext = self.PHOTO_EXT
-            type_media = CacheMediaObj.TYPE_PHOTO
+            type_media = TypesMedia.TYPE_PHOTO
         elif isinstance(media, Video):
             ext = self.VIDEO_EXT
-            type_media = CacheMediaObj.TYPE_VIDEO
+            type_media = TypesMedia.TYPE_VIDEO
 
         destination: Path = self._cache_path / f'{file_id}{ext}'
         await bot.download_file(file.file_path, destination)
@@ -94,3 +95,5 @@ class CacheMediaOperator(CacheOperator):
             self._data = tuple(data)
         else:
             self._data = await self.__save_media_file(media, bot)
+
+        print(self._data)

@@ -36,5 +36,7 @@ async def errors_callback(cb: CallbackQuery, state: FSMContext):
 
 
 @unexpected_router.message()
-async def error_message(msg: Message):
+async def error_message(msg: Message, state: FSMContext):
     print('Error message', msg)
+    now_state = await state.get_state()
+    print('state', now_state)

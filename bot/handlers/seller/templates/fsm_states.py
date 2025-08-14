@@ -20,7 +20,7 @@ class EditProductStates(StatesGroup):
 EDIT_PARAM_PRODUCT_STATES = {
             'name': EditProductStates.EditParam.edit_name,
             'price': EditProductStates.EditParam.edit_price,
-            'photo': EditProductStates.EditParam.edit_photo,
+            'media': EditProductStates.EditParam.edit_photo,
             'catalog': EditProductStates.EditParam.edit_catalog,
             'description': EditProductStates.EditParam.edit_description
 }

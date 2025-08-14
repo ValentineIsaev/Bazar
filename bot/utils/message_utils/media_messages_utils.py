@@ -13,9 +13,8 @@ from bot.utils.cache_utils.operators import CacheMediaOperator, CacheMediaObj
 from bot.configs.constants import ParamFSM
 
 
-TYPES_INPUT_USER_MEDIA = ('photo', 'video')
 async def input_media_album(state: FSMContext, msg: Message,  stop_text: str,
-                            answer_message: MessageSetting) -> None | list[PhotoSize | Video]:
+                            answer_message: MessageSetting) -> None | list[Message]:
     media_list = await state.get_value(ParamFSM.BotMessagesData.INPUTS_MEDIA)
     if media_list is None:
         media_list = []
@@ -53,13 +52,13 @@ async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) 
     if data.media is None:
         raise ValueError('Media data is clear!')
 
-    def input_file() -> str | FSInputFile:
-        if data.media.file_id is not None:
-            _file = data.media.file_id
-        elif data.media.path is not None:
-            if not data.media.path.exists():
-                raise ValueError(f'File \'{data.media}\' is not exits')
-            _file = FSInputFile(data.media.path)
+    def input_file(media_setting: MediaSetting) -> str | FSInputFile:
+        if media_setting.file_id is not None:
+            _file = media_setting.file_id
+        elif media_setting.path is not None:
+            if not media_setting.path.exists():
+                raise ValueError(f'File \'{media_setting.path}\' is not exits')
+            _file = FSInputFile(media_setting.path)
         else:
             raise ValueError('Media setting is clear!')
 
@@ -69,7 +68,7 @@ async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) 
     if isinstance(data.media, tuple):
         media_group = []
         for media in data.media:
-            file = input_file()
+            file = input_file(media)
             if len(media_group) == 0 and data.text is not None:
                 caption = data.text
             else:
@@ -83,7 +82,7 @@ async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) 
         media_message = await bot.send_media_group(chat_id, media=media_group)
 
     elif isinstance(data.media, MediaSetting):
-        file = input_file()
+        file = input_file(data.media)
 
         if data.media.type_media == TypesMedia.TYPE_PHOTO:
             media_message = await bot.send_photo(chat_id, file, caption=data.text,

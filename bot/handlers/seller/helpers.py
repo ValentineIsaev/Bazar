@@ -41,6 +41,7 @@ async def handler_input_product_field(msg: Message, state: FSMContext, field_nam
 
     new_message: MessageSetting | None = None
     if result is None:
+        await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product})
         now_state: str = await state.get_state()
         next_state: State | None = None
         if now_state.startswith(AddProductStates.group_name):
@@ -63,11 +64,12 @@ async def complete_product(state: FSMContext, bot: Bot) -> tuple[None, State]:
     product: InputProduct
     (product, chat_id) = await get_data_state(state, ParamFSM.SellerData.ADD_PRODUCT_OPERATOR,
                                                        ParamFSM.BotMessagesData.CHAT_ID)
+    print(product.media)
     product_message = MessageSetting(text=ADD_PRODUCT_FORM_TEXT.insert((product.name,
                                                                           product.catalog,
                                                                           product.description,
                                                                           product.price)),
-                                     cache_media=product.media)
+                                     cache_media=product.media.get_cache())
     await send_cached_media_message(state, bot, product_message)
     await send_message(state, bot, COMPLETE_ADD_PRODUCT_MESSAGE)
 

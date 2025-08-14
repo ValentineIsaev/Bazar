@@ -35,7 +35,7 @@ EDIT_PRODUCT_KEYBOARD = create_callback_inline_keyboard(InlineButtonSetting(text
                                                                             callback=create_callback(
                                                                                 'product',
                                                                                 'edit_product',
-                                                                                'photo'
+                                                                                'media'
                                                                             ))
                                                         )
 ADD_PRODUCT_COMPLETE_KEYBOARD = create_callback_inline_keyboard(InlineButtonSetting(text='Да',

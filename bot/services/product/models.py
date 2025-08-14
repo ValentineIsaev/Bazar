@@ -55,26 +55,19 @@ class InputProduct(Product):
     def __init__(self):
         super().__init__()
 
-    @property
-    def price(self):
-        return self._price
+        self._VALIDATION_FUNCS = {
+            'price': self._validate_price,
+            'media': self._validate_media
+        }
 
-    @property
-    def media(self):
-        return self._media
-
-    @price.setter
-    def price(self, price: str) -> ValidationResult:
+    def _validate_price(self, price: str | int) -> ValidationResult:
         try:
             float(price)
-            self._price = price
             return ValidationResult(is_validate=True)
         except ValueError:
             return ValidationResult(is_validate=False, error_message=INVALID_PRICE_MESSAGE)
 
-    @media.setter
-    def media(self, media: CacheMediaOperator) -> ValidationResult:
-        self._media = media
+    def _validate_media(self, media: CacheMediaOperator) -> ValidationResult:
         return ValidationResult(is_validate=True)
 
     def add_value(self, field_name: str, value) -> None | MessageSetting:
@@ -86,13 +79,11 @@ class InputProduct(Product):
         None - validate is successfully or MessageSetting - validation error
         """
 
-        prop = getattr(type(self), field_name)
-        if isinstance(prop, property):
-            result: ValidationResult = prop.fset(self, value)
+        if not hasattr(self, field_name):
+            raise ValueError(f'{field_name} is not exist!')
+        if field_name in self._VALIDATION_FUNCS:
+            result: ValidationResult = self._VALIDATION_FUNCS.get(field_name)(value)
             if not result.is_validate:
                 return result.error_message
-        else:
-            setattr(self, field_name, value)
+        setattr(self, field_name, value)
         return None
-
-print(InputProduct().add_value('price', 56))
