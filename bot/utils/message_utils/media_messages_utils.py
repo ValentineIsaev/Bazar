@@ -1,59 +1,65 @@
+import asyncio
+
 from aiogram import Bot
-from aiogram.types import Message, FSInputFile, PhotoSize, Video, InputMediaPhoto, InputMediaVideo
+from aiogram.types import Message, FSInputFile, InputMediaPhoto, InputMediaVideo
 from aiogram.fsm.context import FSMContext
 
 from ..message_utils.message_setting_classes import TypesMedia
 
-from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
+from bot.utils.message_utils.message_utils import MessageSetting
 from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_setting_classes import MediaSetting
 
-from bot.utils.cache_utils.operators import CacheMediaOperator, CacheMediaObj
+from bot.utils.cache_utils.operators import CacheMediaObj
 
 from bot.configs.constants import ParamFSM
 
-
+lock = asyncio.Lock()
 async def input_media_album(state: FSMContext, msg: Message,  answer_message: MessageSetting,
                             stop_text: str, max_len: int = 3) -> list | list[Message]:
-    result = []
+    async with lock:
+        result = []
+        media_list: list[Message] | None = await state.get_value(ParamFSM.BotMessagesData.InputMediaAlbum.INPUTS_MEDIA)
+        bots_messages: list[Message] | None = await state.get_value(ParamFSM.BotMessagesData.InputMediaAlbum.BOTS_MESSAGES)
+        if media_list is None:
+            media_list = []
+        if bots_messages is None:
+            bots_messages = []
 
-    media_list: list[Message] | None = await state.get_value(ParamFSM.BotMessagesData.InputMediaAlbum.INPUTS_MEDIA)
-    bots_messages: list[Message] | None = await state.get_value(ParamFSM.BotMessagesData.InputMediaAlbum.BOTS_MESSAGES)
-    if media_list is None:
-        media_list = []
-    if bots_messages is None:
-        bots_messages = []
+        if len(bots_messages) > 0:
+            await bots_messages[0].delete()
+            bots_messages.pop(0)
 
-    if len(bots_messages) > 1:
-        await bots_messages[0].delete()
-        bots_messages.pop(0)
+        is_full = len(media_list) >= max_len-1
 
-    is_full = len(media_list) > max_len-1
-    if msg.text == stop_text or is_full:
-        for bot_message in bots_messages:
-            await bot_message.delete()
+        if msg.text is not None or is_full:
+            if msg.text == stop_text or is_full:
+                for bot_message in bots_messages:
+                    await bot_message.delete()
 
-        result = media_list
+                result = media_list
 
-        bots_messages = None
-        media_list = None
+                bots_messages = None
+                media_list = None
 
-        if is_full:
-            result.append(msg)
-    else:
-        media_list.append(msg)
+                if is_full:
+                    result.append(msg)
+            else:
+                await msg.delete()
+        else:
+            media_list.append(msg)
 
-        sent_message = await msg.answer(answer_message.text,
-                                        parse_mode=answer_message.parse_mode,
-                                        reply_markup=answer_message.keyboard)
-        bots_messages.append(sent_message)
+            sent_message = await msg.answer(answer_message.text,
+                                            parse_mode=answer_message.parse_mode,
+                                            reply_markup=answer_message.keyboard)
+            bots_messages.append(sent_message)
 
-    await state.update_data(**{ParamFSM.BotMessagesData.InputMediaAlbum.INPUTS_MEDIA:
-                                   media_list,
-                               ParamFSM.BotMessagesData.InputMediaAlbum.BOTS_MESSAGES:
-                               bots_messages})
+        await state.update_data(**{ParamFSM.BotMessagesData.InputMediaAlbum.INPUTS_MEDIA:
+                                       media_list,
+                                   ParamFSM.BotMessagesData.InputMediaAlbum.BOTS_MESSAGES:
+                                   bots_messages})
 
-    return result
+        return result
 
 
 async def send_cached_media_message(state: FSMContext, bot: Bot, data: MessageSetting) -> None:

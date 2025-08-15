@@ -77,15 +77,17 @@ async def add_description(msg: Message, state: FSMContext):
     await handler_input_product_field(msg, state, 'description', msg.text)
 
 
-@router.message(StateFilter(AddProductStates.add_photo, EditProductStates.EditParam.edit_photo),
-                or_f(F.photo,
+@router.message(or_f(F.photo,
                      F.video,
-                     F.media_group_id,
-                     Command('skip')))
+                     Command('skip'),
+                     StateFilter(AddProductStates.add_photo, EditProductStates.EditParam.edit_photo)))
 async def add_photo(msg: Message, state: FSMContext):
-    album = await input_media_album(state, msg, PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, '/skip')
-    if album is not None:
-        user_data = await caching_media(album, msg.bot)
+    album = await input_media_album(state, msg, PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, PHOTO_INPUT_STOP_TEXT)
+    is_skip = msg.text == SKIP_INPUT_PHOTO_COMMAND
+    if album or is_skip:
+        user_data = None
+        if not is_skip:
+            user_data = await caching_media(album, msg.bot)
         await handler_input_product_field(msg, state, 'media', user_data, False)
 
 

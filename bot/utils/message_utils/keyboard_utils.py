@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import re
 
-from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 from aiogram.types import inline_keyboard_markup
 
 @dataclass()
@@ -9,11 +9,6 @@ class InlineButtonSetting:
     text: str = None
     callback: str = None
     url: str = None
-
-
-@dataclass
-class ReplyButtonSetting:
-    pass
 
 
 def _builder_inline_keyboard(*data: InlineButtonSetting,
@@ -24,6 +19,12 @@ def _builder_inline_keyboard(*data: InlineButtonSetting,
             *[InlineKeyboardButton(text=button.text, callback_data=button.callback) for button in layer])
 
     return builder
+
+
+def create_reply_keyboard(*text) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=text_button)] for text_button in text],
+                               one_time_keyboard=True,
+                               resize_keyboard=True)
 
 
 def create_callback_inline_keyboard(*data: InlineButtonSetting, row=1) -> inline_keyboard_markup:

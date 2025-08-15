@@ -1,4 +1,5 @@
-from bot.utils.message_utils.keyboard_utils import create_callback_inline_keyboard, InlineButtonSetting, create_callback
+from bot.utils.message_utils.keyboard_utils import (create_callback_inline_keyboard, InlineButtonSetting,
+                                                    create_callback)
 
 MENU_KEYBOARD = create_callback_inline_keyboard(InlineButtonSetting(text='Добавить товар',
                                                                     callback=create_callback('product',
