@@ -9,7 +9,7 @@ from aiogram.types import PhotoSize, Video
 from bot.utils.exception import SingleUseCache
 from bot.utils.message_utils.message_setting_classes import TypesMedia
 
-from bot.configs.configs import CachePath
+from bot.configs.configs import CACHE_MEDIA_DIR
 
 from .cache_obj import CacheMediaObj, CacheObj
 
@@ -55,7 +55,7 @@ class CacheMediaOperator(CacheOperator):
 
     @property
     def _cache_dir(self) -> Path:
-        return CachePath.CACHE_MEDIA_DIR
+        return CACHE_MEDIA_DIR
 
     async def __save_media_file(self, media: PhotoSize | Video, bot: Bot) -> CacheMediaObj:
         ext = ''

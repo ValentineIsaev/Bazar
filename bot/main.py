@@ -2,13 +2,13 @@ from aiogram import Dispatcher, Bot
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from handlers import seller_router, buyer_router, common_router, catalog_menu_router, unexpected_router
-from configs.configs import TOKEN
+from bot.core.setup import setup
 
 import asyncio
 
 
 async def main():
-    bot = Bot(token=TOKEN)
+    bot = setup()
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_routers(common_router, seller_router, buyer_router, catalog_menu_router)
