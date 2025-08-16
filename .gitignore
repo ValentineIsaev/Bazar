@@ -1,8 +1,9 @@
 bot/.env
-#bot/.env
+database/.env
 .venv
 .idea
 bot/cache/*/*
+bot/uploads/*
 
 __pycache__/
 *.py[cod]
