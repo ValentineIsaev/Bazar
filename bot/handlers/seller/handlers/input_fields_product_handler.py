@@ -4,11 +4,12 @@ from aiogram import F
 from aiogram.filters import StateFilter, or_f
 
 from ..helpers import *
+from bot.handlers.utils import create_product_catalog
 from bot.handlers.seller.templates.messages import *
 from bot.handlers.seller.templates.fsm_states import *
 from bot.handlers.seller.templates.configs import BASE_STATE
 
-from bot.handlers.common.catalog import create_catalog_message
+from bot.utils.message_utils.catalog_utils import repack_choice_catalog_data
 from bot.configs.constants import UserTypes, PASS_CALLBACK
 from bot.utils.message_utils.message_utils import *
 from bot.utils.exception import UnknownCallback
@@ -17,8 +18,6 @@ from bot.utils.message_utils.keyboard_utils import *
 from bot.utils.filters import CallbackFilter, TypeUserFilter
 from bot.utils.message_utils.media_messages_utils import input_media_album
 from bot.utils.cache_utils.cache_utils import caching_media
-from bot.services.product.services import ProductService
-from bot.services.product.models import CatalogMenu
 
 
 router = Router()
@@ -35,21 +34,12 @@ async def process_product_actions(cb: CallbackQuery, state: FSMContext):
         if not now_state.startswith(EditProductStates.group_name):
             await state.set_state(AddProductStates.choose_catalog)
 
-        catalog_menu = ProductService.get_product_catalog()
-        await state.update_data(**{ParamFSM.ProductData.CATALOG_MENU: catalog_menu,
-                                       ParamFSM.ProductData.CATALOG_MENU_CALLBACK: create_callback('product',
-                                                                                       subscope,
-                                                                                       'choice_catalog')})
-
-        new_message = await create_catalog_message(state)
+        new_message = await create_product_catalog(state, create_callback('product',
+                                                                                subscope,
+                                                                        'choice_catalog'))
 
     elif action.startswith('choice_catalog'):
-        catalog_menu: CatalogMenu
-        (catalog_menu,) = await get_data_state(state, ParamFSM.ProductData.CATALOG_MENU)
-
-        number_catalog = int(action.replace('choice_catalog-', ''))
-
-        selected_catalog = catalog_menu.get_catalogs()[number_catalog]
+        selected_catalog = repack_choice_catalog_data(cb.data, state)
         await handler_input_product_field(cb.message, state, 'catalog',
                                           selected_catalog, is_delete_user_message=False)
 

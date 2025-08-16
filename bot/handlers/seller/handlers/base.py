@@ -1,5 +1,7 @@
 from aiogram import F
 from aiogram.filters import StateFilter
+
+from bot.handlers.utils import user_start_handler
 from bot.handlers.handlers_import import *
 from bot.handlers.seller.templates.configs import BASE_STATE
 
@@ -15,11 +17,7 @@ router = Router()
 @router.message(Command('seller'))
 @router.callback_query(StateFilter(BASE_STATE), F.data == PASS_CALLBACK)
 async def send_seller_menu(msg: Message, state: FSMContext):
-    if await state.get_state() != BASE_STATE:
-        await state.set_state(BASE_STATE)
-        await state.update_data(**{ParamFSM.UserData.TYPE_USER: UserTypes.SELLER})
-
-    msg_data = await get_data_state(state, ParamFSM.UserData.NAME,ParamFSM.UserData.RATING,
+    msg_data = await get_data_state(state, ParamFSM.UserData.NAME, ParamFSM.UserData.RATING,
                                     ParamFSM.UserData.MONEY)
     new_msg = MessageSetting(text=START_MESSAGE.insert(msg_data), keyboard=MENU_KEYBOARD)
-    await send_message(state, msg.bot, new_msg)
+    await user_start_handler(msg.bot, state, BASE_STATE, UserTypes.SELLER, new_msg)

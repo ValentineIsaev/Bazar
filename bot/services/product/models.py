@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from bot.services.product.messages import INVALID_PRICE_MESSAGE
 
 from bot.utils.cache_utils.operators import CacheMediaOperator
-from bot.utils.message_utils.message_utils import MessageSetting
+from bot.utils.message_utils.message_setting_classes import MessageSetting, MediaSetting
 
 
 class CatalogMenu:
-    def __init__(self, catalogs, page_capacity: int):
+    def __init__(self, catalogs: tuple, page_capacity: int):
         self._page = 0
         self._catalogs = catalogs
 
@@ -48,7 +48,7 @@ class Product:
     price: str | None = None
     catalog: str | None = None
     description: str | None = None
-    media: CacheMediaOperator | None = None
+    media: CacheMediaOperator | None | MediaSetting = None
 
 
 class InputProduct(Product):

@@ -1,5 +1,5 @@
 from .seller.router import seller_router
-from .buyer.handlers import buyer_router
+from bot.handlers.buyer.handlers.buy_product import buyer_router
 from .common.common import common_router, unexpected_router
 from .common.catalog import catalog_menu_router
 

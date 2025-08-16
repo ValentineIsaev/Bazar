@@ -34,6 +34,15 @@ class ProductService:
             )
 
     @staticmethod
+    def get_products(catalog: str) -> CatalogMenu:
+        return CatalogMenu((
+            Product(name='Parliament', price='300', description='Дорогие приятные крепкие сигареты'),
+                    Product(name='Philipmorris', price='200', description='Вкусные сигареты с кнопкой'),
+                    Product(name='Camel', price='222', description='Старый добрый верблюд')
+        ),
+        page_capacity=1)
+
+    @staticmethod
     def send_product(product: Product) -> None:
         pass
 

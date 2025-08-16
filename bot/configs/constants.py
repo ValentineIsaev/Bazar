@@ -25,6 +25,8 @@ class ParamFSM:
         CATALOG_MENU_CALLBACK = 'catalog_callback'
     class SellerData:
         ADD_PRODUCT_OPERATOR = 'add_product_operator'
+    class BuyerData:
+        CATALOG_PRODUCT = 'catalog_product'
 
 PASS_CALLBACK = '_'
 ROW_BUTTON_CATALOG_MENU = 4
