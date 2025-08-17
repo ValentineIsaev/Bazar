@@ -23,7 +23,7 @@ class MediaSetting:
 
 @dataclass
 class MessageSetting:
-    def __init__(self, text: str, keyboard: inline_keyboard_markup=None, parse_mode:str=None,
+    def __init__(self, text: str=None, keyboard: inline_keyboard_markup=None, parse_mode:str=None,
                  media: MediaSetting | tuple[MediaSetting]=None,
                  cache_media: CacheMediaObj | tuple[CacheMediaObj]=None):
         self.text = text

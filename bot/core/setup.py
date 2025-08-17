@@ -16,7 +16,7 @@ class ConfigsName:
     CACHE_DIR = 'CACHE_DIR'
     CACHE_MEDIA_DIR = 'CACHE_MEDIA_DIR'
 
-PROJECT_ROOT = Path(__file__)
+PROJECT_ROOT = Path(__file__).parent.parent
 configs: dict = {ConfigsName.PROJECT_ROOT: PROJECT_ROOT}
 
 
@@ -50,7 +50,7 @@ def load_config() -> dict:
 
     media_cache_dir = Path(_load_config(ConfigsName.CACHE_MEDIA_DIR))
     if media_cache_dir.parent != cache_dir:
-        raise ValueError('Media cache dir need heir cache dir: /cache_dir/media_cache_dir')
+        raise ValueError(f'Media cache dir need heir cache dir: {cache_dir}. Your cache dir: {media_cache_dir}')
     configs[ConfigsName.CACHE_MEDIA_DIR] = media_cache_dir
 
     return configs

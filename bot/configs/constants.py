@@ -6,6 +6,7 @@ class UserTypes:
     ANALYST = 'analyst' # Аналитик работы бота
     DEFAULTS = 'defaults' # Пользователь, невыбравший роль
 
+
 class ParamFSM:
     class UserData:
         NAME = 'name'
@@ -19,14 +20,17 @@ class ParamFSM:
         class InputMediaAlbum:
             INPUTS_MEDIA = 'input_media'
             BOTS_MESSAGES = 'answer_media_bots_messages'
+        class CatalogData:
+            CATALOG_MENU = 'catalog_menu'
+            CATALOG_MENU_CALLBACK = 'catalog_callback'
+            RENDER_CATALOG_DATA_CLASS = 'render_catalog_data_class'
     class ProductData:
-        CATALOG_MENU = 'catalog_menu'
         PRODUCT = 'product'
-        CATALOG_MENU_CALLBACK = 'catalog_callback'
     class SellerData:
         ADD_PRODUCT_OPERATOR = 'add_product_operator'
     class BuyerData:
         CATALOG_PRODUCT = 'catalog_product'
+
 
 PASS_CALLBACK = '_'
 ROW_BUTTON_CATALOG_MENU = 4

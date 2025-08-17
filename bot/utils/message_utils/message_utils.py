@@ -10,11 +10,11 @@ from bot.configs.constants import ParamFSM
 from bot.utils.helper import get_data_state
 
 
-async def delete_bot_message(state: FSMContext, bot: Bot) -> None:
+async def delete_bot_message(state: FSMContext) -> None:
     bot_message: Message
     (bot_message,) = await get_data_state(state, ParamFSM.BotMessagesData.BOT_MESSAGE)
 
-    await bot.delete_message(bot_message.chat.id, bot_message.message_id)
+    await bot_message.delete()
 
 
 async def send_message(state: FSMContext, bot: Bot, data: MessageSetting, is_send_new=True):

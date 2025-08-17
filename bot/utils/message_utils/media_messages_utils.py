@@ -34,6 +34,9 @@ async def input_media_album(state: FSMContext, msg: Message,  answer_message: Me
 
         if msg.text is not None or is_full:
             if msg.text == stop_text or is_full:
+                if msg.text == stop_text:
+                    await msg.delete()
+
                 for bot_message in bots_messages:
                     await bot_message.delete()
 

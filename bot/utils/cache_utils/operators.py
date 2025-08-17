@@ -55,6 +55,7 @@ class CacheMediaOperator(CacheOperator):
 
     @property
     def _cache_dir(self) -> Path:
+        print(CACHE_MEDIA_DIR)
         return CACHE_MEDIA_DIR
 
     async def __save_media_file(self, media: PhotoSize | Video, bot: Bot) -> CacheMediaObj:

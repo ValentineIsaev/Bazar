@@ -7,7 +7,7 @@ class UnknownCallback(Exception):
 
 
 class EmptyConfig(Exception):
-    def __int__(self, key: str):
+    def __init__(self, key: str):
         self._key = key
 
     def __str__(self):

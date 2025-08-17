@@ -60,7 +60,7 @@ async def complete_product(state: FSMContext, bot: Bot) -> tuple[None, State]:
                     product.price)
     complete_text = ADD_PRODUCT_FORM_TEXT.insert(product_data)
     if product.media is not None:
-        await delete_bot_message(state, bot)
+        await delete_bot_message(state)
         product_message = MessageSetting(text=complete_text,
                                          cache_media=product.media.get_cache())
         await send_cached_media_message(state, bot, product_message)

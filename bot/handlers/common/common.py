@@ -20,7 +20,7 @@ async def handler_start(msg: Message, state: FSMContext):
     else:
         if ParamFSM.UserData.TYPE_USER not in user_data.keys():
             raise ValueError('Error in logic')
-        await send_message(state, msg.bot, DEFAULT_MESSAGES[user_data[ParamFSM.TYPE_USER]])
+        await send_message(state, msg.bot, DEFAULT_MESSAGES[user_data[ParamFSM.UserData.TYPE_USER]])
 
 
 @common_router.message(Command('help'))
