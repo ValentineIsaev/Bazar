@@ -8,7 +8,7 @@ from bot.utils.message_utils.keyboard_utils import (create_callback_inline_keybo
                                                     InlineButtonSetting, create_callback)
 from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_utils import delete_bot_message, send_message
-from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message
+from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message, delete_media_message
 
 from bot.services.product.models import CatalogMenu
 from bot.configs.constants import ParamFSM
@@ -39,7 +39,7 @@ async def create_catalog_message(state: FSMContext) -> MessageSetting:
     additional_keyboard = ((CATALOG_MENU_BACK if not catalog_menu.is_start_page else ()) +
                            (CATALOG_MENU_NEXT if not catalog_menu.is_end_page else ()))
     keyboard = message.keyboard
-    message.keyboard =create_callback_inline_keyboard(*additional_keyboard) if keyboard is None \
+    message.keyboard =create_callback_inline_keyboard(*additional_keyboard, row=2) if keyboard is None \
         else add_callback_inline_keyboard(keyboard, *additional_keyboard,row=2)
 
     return message
@@ -47,6 +47,7 @@ async def create_catalog_message(state: FSMContext) -> MessageSetting:
 
 async def send_catalog_message(state: FSMContext, bot: Bot, message: MessageSetting):
     is_send_new = False
+    await delete_media_message(state)
     if message.media is not None or message.cache_media is not None:
         await delete_bot_message(state)
         is_send_new = True

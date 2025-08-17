@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from .models import CatalogMenu, Product
+from ...utils.message_utils.message_setting_classes import MediaSetting, TypesMedia
 
 
 class ProductService:
@@ -36,9 +39,15 @@ class ProductService:
     @staticmethod
     def get_products(catalog: str) -> CatalogMenu:
         return CatalogMenu((
-            Product(name='Parliament', price='300', description='Дорогие приятные крепкие сигареты'),
+            Product(name='Parliament', price='300', description='Дорогие приятные крепкие сигареты',
+                    media=MediaSetting(type_media=TypesMedia.TYPE_PHOTO,
+                                       path=Path('/home/valentine/PythonProject/Bazar/bot/uploads/1.jpeg'))),
                     Product(name='Philipmorris', price='200', description='Вкусные сигареты с кнопкой'),
-                    Product(name='Camel', price='222', description='Старый добрый верблюд')
+                    Product(name='Camel', price='222', description='Старый добрый верблюд',
+                            media=MediaSetting(type_media=TypesMedia.TYPE_PHOTO,
+                                               path=Path('/home/valentine/PythonProject/Bazar/bot/uploads/2.jpeg'))
+                            ),
+            Product(name='Chapman', price='300', description='Роллсройс в мире сигарет')
         ),
         page_capacity=1)
 

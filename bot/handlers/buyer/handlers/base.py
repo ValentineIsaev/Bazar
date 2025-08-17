@@ -12,7 +12,7 @@ router = Router()
 
 @router.message(Command('buyer'))
 async def buyer_base(msg: Message, state: FSMContext):
-    user_data = await get_data_state(ParamFSM.UserData.NAME)
+    user_data = await get_data_state(state, ParamFSM.UserData.NAME)
     msg_text = START_MESSAGE_TEXT.insert(user_data)
     new_message = MessageSetting(text=msg_text, keyboard=START_KEYBOARD)
     await user_start_handler(msg.bot, state, BASE_STATE, UserTypes.BUYER, new_message)

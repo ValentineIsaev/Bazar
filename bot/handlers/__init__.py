@@ -1,7 +1,7 @@
 from .seller.router import seller_router
-from bot.handlers.buyer.handlers.buy_product import buyer_router
 from .common.common import common_router, unexpected_router
 from .common.catalog import catalog_menu_router
+from .buyer.router import router as buyer_router
 
 from bot.handlers.seller.templates.configs import BASE_STATE as BASE_SELLER_STATE
 

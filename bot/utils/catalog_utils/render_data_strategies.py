@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 from aiogram.fsm.context import FSMContext
 
+from bot.services.product.models import Product
+
 from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.message_utils import create_list_message
@@ -30,5 +32,6 @@ class MenuCatalogRender(CatalogRender):
 
 
 class ProductCatalogRender(CatalogRender):
-    def rendering_data(self, state: FSMContext, catalog_data: tuple) -> MessageSetting:
-        pass
+    async def rendering_data(self, state: FSMContext, catalog_data: tuple) -> MessageSetting:
+        product: Product = catalog_data[0]
+        return MessageSetting(text=product.name, media=product.media)

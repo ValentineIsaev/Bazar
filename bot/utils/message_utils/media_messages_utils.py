@@ -14,6 +14,20 @@ from bot.utils.cache_utils.operators import CacheMediaObj
 
 from bot.configs.constants import ParamFSM
 
+
+async def delete_media_message(state: FSMContext):
+    (bots_media_message,) = await get_data_state(state, ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE)
+    if bots_media_message is not None:
+        if isinstance(bots_media_message, Message):
+            await bots_media_message.delete()
+        elif isinstance(bots_media_message, list):
+            for msg in bots_media_message:
+                await msg.delete()
+
+        await state.update_data(**{ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE: None})
+
+
+
 lock = asyncio.Lock()
 async def input_media_album(state: FSMContext, msg: Message,  answer_message: MessageSetting,
                             stop_text: str, max_len: int = 3) -> list | list[Message]:

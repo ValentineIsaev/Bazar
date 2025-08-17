@@ -15,7 +15,7 @@ class CatalogMenu:
 
     @property
     def is_end_page(self) -> bool:
-        return self._page * 2 * self._page_capacity >= len(self._catalogs)-1
+        return (self._page+1) * self._page_capacity >= len(self._catalogs)
 
     @property
     def is_start_page(self) -> bool:
@@ -31,7 +31,7 @@ class CatalogMenu:
 
     def get_catalogs(self) -> tuple:
         start_index = self._page * self._page_capacity
-        end_index = min(start_index + self._page_capacity, len(self._catalogs)-1)
+        end_index = min(start_index + self._page_capacity, len(self._catalogs))
 
         return self._catalogs[start_index:end_index]
 
