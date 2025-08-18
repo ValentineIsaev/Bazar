@@ -10,8 +10,8 @@ class BuyerStates(StatesGroup):
         return_product = State()
 
     class BuyProduct(StatesGroup):
-        choice_catalog = State()
         look_product = State()
+        payment_product = State()
         buy_product = State()
         set_rating = State()
 

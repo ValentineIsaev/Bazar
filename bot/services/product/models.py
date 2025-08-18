@@ -44,6 +44,8 @@ class ValidationResult:
 
 @dataclass()
 class Product:
+    id: int = None
+
     name: str | None = None
     price: str | None = None
     catalog: str | None = None

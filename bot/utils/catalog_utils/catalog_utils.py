@@ -2,6 +2,7 @@ from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 
 from .render_data_strategies import CatalogRender, MenuCatalogRender, ProductCatalogRender
+from .messages import HEADER_CATALOG_TEXT
 
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (create_callback_inline_keyboard, add_callback_inline_keyboard,
@@ -13,8 +14,6 @@ from bot.utils.message_utils.media_messages_utils import send_media_message, sen
 from bot.services.product.models import CatalogMenu
 from bot.configs.constants import ParamFSM
 
-HEADER_CATALOG_MENU_TEXT = ('Используйте кнопки для выбора номера нужного каталога, '
-                            'а также кнопки вперед и назад для пролистывания.\n\n')
 
 CATALOG_MENU_NEXT = (InlineButtonSetting(text='Вперед', callback=create_callback('catalog_menu',
                                                                                 'scroll',
@@ -34,12 +33,12 @@ async def create_catalog_message(state: FSMContext) -> MessageSetting:
 
     if message.text is None:
         message.text = ''
-    message.text = HEADER_CATALOG_MENU_TEXT + message.text
+    message.text = HEADER_CATALOG_TEXT + message.text
 
     additional_keyboard = ((CATALOG_MENU_BACK if not catalog_menu.is_start_page else ()) +
                            (CATALOG_MENU_NEXT if not catalog_menu.is_end_page else ()))
     keyboard = message.keyboard
-    message.keyboard =create_callback_inline_keyboard(*additional_keyboard, row=2) if keyboard is None \
+    message.keyboard = create_callback_inline_keyboard(*additional_keyboard, row=2) if keyboard is None \
         else add_callback_inline_keyboard(keyboard, *additional_keyboard,row=2)
 
     return message
