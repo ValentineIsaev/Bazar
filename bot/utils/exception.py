@@ -1,3 +1,11 @@
+class LoadConfigError(Exception):
+    def __init__(self, error: str):
+        self._error = error
+
+    def __str__(self):
+        return self._error
+
+
 class UnknownCallback(Exception):
     def __init__(self, callback: str):
         self._cb = callback

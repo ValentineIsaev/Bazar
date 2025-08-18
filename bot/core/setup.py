@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import shutil
 
-from bot.utils.exception import EmptyConfig
+from bot.utils.exception import EmptyConfig, LoadConfigError
 
 from dotenv import load_dotenv
 from aiogram import Bot
@@ -15,6 +15,7 @@ class ConfigsName:
 
     CACHE_DIR = 'CACHE_DIR'
     CACHE_MEDIA_DIR = 'CACHE_MEDIA_DIR'
+
 
 PROJECT_ROOT = Path(__file__).parent.parent
 configs: dict = {ConfigsName.PROJECT_ROOT: PROJECT_ROOT}
@@ -39,18 +40,22 @@ def load_config() -> dict:
 
     env_file = PROJECT_ROOT / '.env'
     if not env_file.exists():
-        raise ValueError(f'Env file not exist or is not locates at {env_file}')
+        raise LoadConfigError(f'Env file not exist or is not locates at {env_file}')
     load_dotenv(env_file)
 
     bot_token = _load_config(ConfigsName.BOT_TOKEN)
     configs[ConfigsName.BOT_TOKEN] = bot_token
 
     cache_dir = Path(_load_config(ConfigsName.CACHE_DIR))
+    if not cache_dir.exists():
+        raise LoadConfigError('Cache dir is not exits!')
     configs[ConfigsName.CACHE_DIR] = cache_dir
 
     media_cache_dir = Path(_load_config(ConfigsName.CACHE_MEDIA_DIR))
+    if not media_cache_dir.exists():
+        raise LoadConfigError('Cache dir is not exits!')
     if media_cache_dir.parent != cache_dir:
-        raise ValueError(f'Media cache dir need heir cache dir: {cache_dir}. Your cache dir: {media_cache_dir}')
+        raise LoadConfigError(f'Media cache dir need heir cache dir: {cache_dir}. Your cache dir: {media_cache_dir}')
     configs[ConfigsName.CACHE_MEDIA_DIR] = media_cache_dir
 
     return configs
