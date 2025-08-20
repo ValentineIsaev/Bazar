@@ -11,7 +11,7 @@ from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_utils import delete_bot_message, send_message
 from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message, delete_media_message
 
-from bot.services.product.models import CatalogMenu
+from bot.services.product.schemas import CatalogMenu
 from bot.configs.constants import ParamFSM
 
 

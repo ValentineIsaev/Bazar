@@ -7,7 +7,7 @@ from .messages import HEADER_CATALOG_MENU_TEXT
 from bot.handlers.buyer.templates.keyboard import PRODUCT_ACTIONS
 from bot.handlers.buyer.templates.messages import PRODUCT_INFO_TEXT
 
-from bot.services.product.models import Product
+from bot.services.product.schemas import Product
 
 from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_setting_classes import MessageSetting

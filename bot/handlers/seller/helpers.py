@@ -10,7 +10,7 @@ from bot.handlers.seller.templates.fsm_states import AddProductStates
 from bot.handlers.seller.templates.fsm_states import EditProductStates
 from bot.utils.helper import get_data_state
 from bot.configs.constants import ParamFSM
-from bot.services.product.models import InputProduct
+from bot.services.product.schemas import InputProduct
 from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
 from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message
 

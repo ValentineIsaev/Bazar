@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .models import CatalogMenu, Product
+from .schemas import CatalogMenu, Product
 from ...utils.message_utils.message_setting_classes import MediaSetting, TypesMedia
 
 

@@ -17,7 +17,7 @@ class ConfigsName:
     CACHE_MEDIA_DIR = 'CACHE_MEDIA_DIR'
 
 
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 configs: dict = {ConfigsName.PROJECT_ROOT: PROJECT_ROOT}
 
 

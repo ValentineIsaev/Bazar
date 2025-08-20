@@ -3,7 +3,7 @@ from aiogram.dispatcher.router import Router
 from aiogram.types import CallbackQuery
 
 from bot.configs.constants import ParamFSM
-from bot.services.product.models import CatalogMenu
+from bot.services.product.schemas import CatalogMenu
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (parse_callback)
 from bot.utils.filters import CallbackFilter

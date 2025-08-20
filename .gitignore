@@ -1,5 +1,4 @@
-bot/.env
-database/.env
+.env
 .venv
 .idea
 bot/cache/*/*
