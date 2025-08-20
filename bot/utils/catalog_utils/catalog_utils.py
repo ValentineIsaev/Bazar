@@ -60,7 +60,7 @@ async def send_catalog_message(state: FSMContext, bot: Bot, message: MessageSett
 
 
 async def repack_choice_catalog_data(callback: str, state: FSMContext):
-    catalog_menu: CatalogMenu
+    catalog_menu: CatalogMenuService
     catalog_menu, catalog_callback  = await get_data_state(state, ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU,
                                            ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU_CALLBACK)
 

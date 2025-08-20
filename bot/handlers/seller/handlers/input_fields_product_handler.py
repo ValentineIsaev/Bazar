@@ -18,12 +18,14 @@ from bot.utils.filters import CallbackFilter, TypeUserFilter
 from bot.utils.message_utils.media_messages_utils import input_media_album
 from bot.utils.cache_utils.cache_utils import caching_media
 
+from bot.services.product.services import ProductService
+
 
 router = Router()
 
 
 @router.callback_query(CallbackFilter(scope='product', subscope='add'), TypeUserFilter(UserTypes.SELLER))
-async def process_product_actions(cb: CallbackQuery, state: FSMContext):
+async def process_product_actions(cb: CallbackQuery, state: FSMContext, product_service: ProductService):
     _, subscope, action = parse_callback(cb.data)
     new_message: MessageSetting | None; is_send_new: bool
     new_message, is_send_new = None, True
@@ -35,7 +37,8 @@ async def process_product_actions(cb: CallbackQuery, state: FSMContext):
 
         new_message = await create_menu_catalog(state, create_callback('product',
                                                                        subscope,
-                                                                       'choice_catalog'))
+                                                                       'choice_catalog'),
+                                                product_service)
 
     elif action.startswith('choice_catalog'):
         selected_catalog = await repack_choice_catalog_data(cb.data, state)

@@ -23,6 +23,6 @@ async def user_start_handler(bot: Bot, state: FSMContext, base_state: State, use
     await send_message(state, bot, start_message)
 
 
-async def create_menu_catalog(state, choice_callback: str) -> MessageSetting:
-    catalog_menu = ProductService.get_product_catalog()
+async def create_menu_catalog(state, choice_callback: str, product_service: ProductService) -> MessageSetting:
+    catalog_menu = product_service.get_product_catalog()
     return await create_catalog(state, choice_callback, catalog_menu)

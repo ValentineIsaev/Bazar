@@ -22,7 +22,7 @@ buyer_router = Router()
 
 @buyer_router.callback_query(and_f(CallbackFilter(scope='buy_product'),
                                    TypeUserFilter(UserTypes.BUYER)))
-async def buy_product_handler(cb: CallbackQuery, state: FSMContext):
+async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_services: ProductService):
     scope, subscope, action = parse_callback(cb.data)
     new_message: MessageSetting | None = None
     if subscope == 'choice_product':
@@ -34,7 +34,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext):
                                                                            action='choice_catalog'))
         elif action.startswith('choice_catalog'):
             selected_catalog = await repack_choice_catalog_data(cb.data, state)
-            products = ProductService.get_products(selected_catalog)
+            products = product_services.get_products(selected_catalog)
 
             await create_product_catalog(state, cb.bot, products)
     elif subscope == 'buy_product':
