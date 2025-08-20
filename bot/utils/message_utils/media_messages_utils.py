@@ -59,7 +59,7 @@ async def input_media_album(state: FSMContext, msg: Message,  answer_message: Me
                 bots_messages = None
                 media_list = None
 
-                if is_full:
+                if is_full and msg.text is None:
                     result.append(msg)
             else:
                 await msg.delete()

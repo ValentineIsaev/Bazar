@@ -11,7 +11,7 @@ from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_utils import delete_bot_message, send_message
 from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message, delete_media_message
 
-from bot.services.product.schemas import CatalogMenu
+from bot.services.product.services import CatalogMenuService
 from bot.configs.constants import ParamFSM
 
 
@@ -24,7 +24,7 @@ CATALOG_MENU_BACK = (InlineButtonSetting(text='Назад', callback=create_call
 
 
 async def create_catalog_message(state: FSMContext) -> MessageSetting:
-    catalog_menu: CatalogMenu; data_render: CatalogRender
+    catalog_menu: CatalogMenuService; data_render: CatalogRender
     catalog_menu, data_render = await get_data_state(state,ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU,
                                                      ParamFSM.BotMessagesData.CatalogData.RENDER_CATALOG_DATA_CLASS)
 
@@ -69,14 +69,14 @@ async def repack_choice_catalog_data(callback: str, state: FSMContext):
     selected_catalog = catalog_menu.get_catalogs()[number_catalog]
     return selected_catalog
 
-async def create_catalog(state: FSMContext, choice_callback: str, catalog_menu: CatalogMenu) -> MessageSetting:
+async def create_catalog(state: FSMContext, choice_callback: str, catalog_menu: CatalogMenuService) -> MessageSetting:
     await state.update_data(**{ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU: catalog_menu,
                                ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU_CALLBACK: choice_callback,
                                ParamFSM.BotMessagesData.CatalogData.RENDER_CATALOG_DATA_CLASS: MenuCatalogRender()})
 
     return await create_catalog_message(state)
 
-async def create_product_catalog(state: FSMContext, bot: Bot, catalog_menu: CatalogMenu):
+async def create_product_catalog(state: FSMContext, bot: Bot, catalog_menu: CatalogMenuService):
     await state.update_data(**{ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU: catalog_menu,
                                ParamFSM.BotMessagesData.CatalogData.RENDER_CATALOG_DATA_CLASS: ProductCatalogRender()})
 

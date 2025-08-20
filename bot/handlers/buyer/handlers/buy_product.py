@@ -2,7 +2,7 @@ from aiogram.filters import and_f
 
 from bot.handlers.buyer.templates.fsm_states import BuyerStates
 from bot.handlers.buyer.templates.keyboard import *
-from bot.services.product.schemas import CatalogMenu
+from bot.services.product.services import CatalogMenuService
 from bot.utils.helper import get_data_state
 from bot.handlers.handlers_import import *
 from bot.utils.catalog_utils.catalog_utils import repack_choice_catalog_data, create_product_catalog, \
@@ -39,7 +39,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext):
             await create_product_catalog(state, cb.bot, products)
     elif subscope == 'buy_product':
         if action == 'choice_product':
-            catalog: CatalogMenu
+            catalog: CatalogMenuService
             (catalog,) = await get_data_state(state, ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU)
             product = catalog.get_catalogs()[0]
 

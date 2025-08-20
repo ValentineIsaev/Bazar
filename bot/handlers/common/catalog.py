@@ -3,7 +3,7 @@ from aiogram.dispatcher.router import Router
 from aiogram.types import CallbackQuery
 
 from bot.configs.constants import ParamFSM
-from bot.services.product.schemas import CatalogMenu
+from bot.services.product.services import CatalogMenuService
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (parse_callback)
 from bot.utils.filters import CallbackFilter
@@ -18,7 +18,7 @@ async def scroll_catalog_menu(cb: CallbackQuery, state: FSMContext):
 
     if subscope == 'scroll':
         user_data = await state.get_data()
-        catalog_menu: CatalogMenu = user_data.get(ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU)
+        catalog_menu: CatalogMenuService = user_data.get(ParamFSM.BotMessagesData.CatalogData.CATALOG_MENU)
 
         if action == 'next':
             catalog_menu.next_page()

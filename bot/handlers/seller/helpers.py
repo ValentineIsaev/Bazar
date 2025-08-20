@@ -10,7 +10,8 @@ from bot.handlers.seller.templates.fsm_states import AddProductStates
 from bot.handlers.seller.templates.fsm_states import EditProductStates
 from bot.utils.helper import get_data_state
 from bot.configs.constants import ParamFSM
-from bot.services.product.schemas import InputProduct
+from bot.services.product.dto import Product
+from bot.services.product.services import InputProductService
 from bot.utils.message_utils.message_utils import MessageSetting, send_message, delete_bot_message
 from bot.utils.message_utils.media_messages_utils import send_media_message, send_cached_media_message
 
@@ -20,17 +21,17 @@ async def handler_input_product_field(msg: Message, state: FSMContext, field_nam
     if is_delete_user_message:
         await msg.delete()
 
-    product: InputProduct = await state.get_value(ParamFSM.SellerData.ADD_PRODUCT_OPERATOR)
-    if product is None:
-        product = InputProduct()
-        await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product})
+    product_service: InputProductService = await state.get_value(ParamFSM.SellerData.ADD_PRODUCT_OPERATOR)
+    if product_service is None:
+        product_service = InputProductService(Product())
+        await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product_service})
 
     filed_config: FieldConfig = ADD_FIELD_PRODUCT_CONFIGS[field_name]
-    result = product.add_value(field_name, value)
+    result = product_service.add_value(field_name, value)
 
     new_message: MessageSetting | None = None
     if result is None:
-        await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product})
+        await state.update_data(**{ParamFSM.SellerData.ADD_PRODUCT_OPERATOR: product_service})
         now_state: str = await state.get_state()
         next_state: State | None = None
         if now_state.startswith(EditProductStates.group_name) or filed_config.is_end_field:
@@ -49,11 +50,12 @@ async def handler_input_product_field(msg: Message, state: FSMContext, field_nam
 
 
 async def complete_product(state: FSMContext, bot: Bot) -> tuple[None, State]:
-    product: InputProduct
-    (product, chat_id) = await get_data_state(state, ParamFSM.SellerData.ADD_PRODUCT_OPERATOR,
+    product_service: InputProductService
+    (product_service, chat_id) = await get_data_state(state, ParamFSM.SellerData.ADD_PRODUCT_OPERATOR,
                                                        ParamFSM.BotMessagesData.CHAT_ID)
 
     new_message = None
+    product = product_service.product
     product_data = (product.name,
                     product.catalog,
                     product.description,

@@ -1,0 +1,24 @@
+from dataclasses import dataclass
+from pydantic import BaseModel
+
+from bot.utils.cache_utils.operators import CacheMediaOperator
+from bot.utils.message_utils.message_setting_classes import MediaSetting
+
+
+@dataclass
+class CatalogMenuEnum:
+    items: tuple
+
+    def __len__(self):
+        return len(self.items)
+
+
+@dataclass()
+class Product:
+    id: int = None
+
+    name: str | None = None
+    price: str | None = None
+    catalog: str | None = None
+    description: str | None = None
+    media: CacheMediaOperator | None | MediaSetting = None

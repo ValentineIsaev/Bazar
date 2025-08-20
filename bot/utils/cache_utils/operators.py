@@ -95,5 +95,3 @@ class CacheMediaOperator(CacheOperator):
             self._data = tuple(data)
         else:
             self._data = await self.__save_media_file(media, bot)
-
-        print(self._data)
