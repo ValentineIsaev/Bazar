@@ -17,13 +17,10 @@ class ParamFSM:
         CHAT_ID = 'chat_id'
         BOT_MESSAGE = 'bot_message'
         BOT_MEDIA_MESSAGE = 'media_message'
+        CATALOG_MANAGER = 'catalog_manager'
         class InputMediaAlbum:
             INPUTS_MEDIA = 'input_media'
             BOTS_MESSAGES = 'answer_media_bots_messages'
-        class CatalogData:
-            CATALOG_MENU = 'catalog_menu'
-            CATALOG_MENU_CALLBACK = 'catalog_callback'
-            RENDER_CATALOG_DATA_CLASS = 'render_catalog_data_class'
     class ProductData:
         PRODUCT = 'product'
     class SellerData:

@@ -9,7 +9,7 @@ from bot.handlers.seller.templates.messages import *
 from bot.handlers.seller.templates.fsm_states import *
 from bot.handlers.seller.templates.configs import BASE_STATE
 
-from bot.utils.catalog_utils.catalog_utils import repack_choice_catalog_data
+from bot.handlers.utils import repack_choice_catalog_data
 from bot.configs.constants import UserTypes, PASS_CALLBACK
 from bot.utils.message_utils.message_utils import *
 from bot.utils.exception import UnknownCallback
@@ -41,7 +41,7 @@ async def process_product_actions(cb: CallbackQuery, state: FSMContext, product_
                                                 product_service)
 
     elif action.startswith('choice_catalog'):
-        selected_catalog = await repack_choice_catalog_data(cb.data, state)
+        selected_catalog = await repack_choice_catalog_data(state, cb.data)
         await handler_input_product_field(cb.message, state, 'catalog',
                                           selected_catalog, is_delete_user_message=False)
 

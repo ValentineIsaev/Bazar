@@ -8,7 +8,8 @@ from bot.utils.helper import get_data_state
 from bot.utils.message_utils.message_utils import send_message, MessageSetting
 
 from bot.services.product.services import ProductService
-from bot.utils.catalog_utils.catalog_utils import create_catalog
+
+from bot.managers.catalog_manager.catalog_managers import ProductCatalogHierarchyManager
 
 
 async def user_start_handler(bot: Bot, state: FSMContext, base_state: State, user_type: str,
@@ -23,6 +24,21 @@ async def user_start_handler(bot: Bot, state: FSMContext, base_state: State, use
     await send_message(state, bot, start_message)
 
 
-async def create_menu_catalog(state, choice_callback: str, product_service: ProductService) -> MessageSetting:
-    catalog_menu = product_service.get_product_catalog()
-    return await create_catalog(state, choice_callback, catalog_menu)
+async def create_menu_catalog(state: FSMContext, choice_callback: str,
+                              product_service: ProductService) -> MessageSetting:
+    catalog_service = product_service.get_product_catalog()
+    catalog_manager = ProductCatalogHierarchyManager(catalog_service, choice_callback)
+
+    await state.update_data(**{ParamFSM.BotMessagesData.CATALOG_MANAGER: catalog_manager})
+
+    return catalog_manager.create_message()
+
+async def repack_choice_catalog_data(state: FSMContext, callback: str):
+    catalog_manager: ProductCatalogHierarchyManager
+    (catalog_manager,) = await get_data_state(state, ParamFSM.BotMessagesData.CATALOG_MANAGER)
+    catalog_callback, catalog_menu = catalog_manager.choice_callback, catalog_manager.catalog
+
+    number_catalog = int(callback.replace(f'{catalog_callback}-', ''))
+
+    selected_catalog = catalog_menu.get_catalogs()[number_catalog]
+    return selected_catalog
