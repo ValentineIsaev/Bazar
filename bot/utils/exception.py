@@ -14,14 +14,6 @@ class UnknownCallback(Exception):
         return f'Unknown callback: {self._cb}'
 
 
-class EmptyConfig(Exception):
-    def __init__(self, key: str):
-        self._key = key
-
-    def __str__(self):
-        return f'The parameter {self._key} is not specified in the environment variables'
-
-
 class SingleUseCache(Exception):
     def __str__(self):
         return 'You can save the cache only once.'
