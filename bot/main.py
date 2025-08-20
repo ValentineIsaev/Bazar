@@ -1,4 +1,4 @@
-from aiogram import Dispatcher, Bot
+from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.core.setup import setup
