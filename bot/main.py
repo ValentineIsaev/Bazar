@@ -9,8 +9,10 @@ from handlers import (seller_router,
                       catalog_menu_router,
                       unexpected_router)
 
-from bot.middlewares.di_middlewares import DIMiddleware
+from bot.middlewares.di_middlewares import DIMiddleware, DIUserMiddleware
 from bot.services.product.services import ProductService
+from bot.managers.mediator.manager import MediatorManager
+from bot.managers.session_manager.session import SessionManager
 
 import asyncio
 
@@ -21,8 +23,12 @@ async def main():
 
     product_service = ProductService()
     di_middleware = DIMiddleware(product_service=product_service)
+    user_session = SessionManager()
+    di_user_middleware = DIUserMiddleware(mediator_manager=lambda: MediatorManager(user_session))
     dp.message.middleware(di_middleware)
+    dp.message.middleware(di_user_middleware)
     dp.callback_query.middleware(di_middleware)
+    dp.callback_query.middleware(di_user_middleware)
 
     dp.include_routers(common_router, seller_router, buyer_router, catalog_menu_router)
     print('Start bot!')
