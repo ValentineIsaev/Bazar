@@ -9,7 +9,7 @@ from handlers import (seller_router,
                       catalog_menu_router,
                       unexpected_router)
 
-from bot.dependencies.middlewares import DIProductServiceMiddleware
+from bot.middlewares.di_middlewares import DIMiddleware
 from bot.services.product.services import ProductService
 
 import asyncio
@@ -20,11 +20,12 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
 
     product_service = ProductService()
-    dp.message.middleware(DIProductServiceMiddleware(product_service))
-    dp.callback_query.middleware(DIProductServiceMiddleware(product_service))
+    di_middleware = DIMiddleware(product_service=product_service)
+    dp.message.middleware(di_middleware)
+    dp.callback_query.middleware(di_middleware)
 
     dp.include_routers(common_router, seller_router, buyer_router, catalog_menu_router)
-    print(id(seller_router))
+    print('Start bot!')
 
     dp.include_router(unexpected_router)
 
