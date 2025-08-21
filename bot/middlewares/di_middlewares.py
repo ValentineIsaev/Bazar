@@ -15,7 +15,7 @@ class DIMiddleware(BaseMiddleware):
 class DIUserMiddleware(DIMiddleware):
     async def __call__(self, handler, event, data: dict):
         state: FSMContext = data.get('state')
-        for name, value in self._services:
+        for name, value in self._services.items():
             service = await state.get_value(name)
             if service is None:
                 service = value()
