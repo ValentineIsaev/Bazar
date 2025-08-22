@@ -3,6 +3,7 @@ if pg_isready -q; then
 fi
 
 sudo service postgresql start &
+sudo systemctl start redis-server
 
 source .venv/bin/activate
 export PYTHONPATH="/home/valentine/PythonProject/Bazar:$PYTHONPATH"
