@@ -15,7 +15,7 @@ class CatalogMenuEnum:
 
 @dataclass()
 class Product:
-    id: int = None
+    id_seller: int = None
 
     name: str | None = None
     price: str | None = None
