@@ -7,4 +7,5 @@ from bot.utils.message_utils.message_setting_classes import MessageSetting
 
 # FSM
 class MediatorManager:
-    pass
+    def __init__(self, _):
+        pass

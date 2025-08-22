@@ -40,5 +40,5 @@ async def repack_choice_catalog_data(state: FSMContext, callback: str):
 
     number_catalog = int(callback.replace(f'{catalog_callback}-', ''))
 
-    selected_catalog = catalog_menu.get_catalogs()[number_catalog]
+    selected_catalog = catalog_menu[number_catalog]
     return selected_catalog

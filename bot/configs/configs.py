@@ -20,6 +20,12 @@ class BotConfigs(ConfigBase):
 class DataBaseConfigs(ConfigBase):
     DATABASE_URL: SecretStr
 
+    @field_validator('DATABASE_URL', mode='before')
+    def make_async_url(cls, v):
+        if isinstance(v, str) and v.startswith('postgresql://'):
+            return v.replace('postgresql://', 'postgresql+asyncpg://', 1)
+        return v
+
 
 class CacheConfigs(ConfigBase):
     CACHE_DIR: Path
