@@ -4,11 +4,9 @@ from aiogram import Bot
 from aiogram.types import Message, FSInputFile, InputMediaPhoto, InputMediaVideo
 from aiogram.fsm.context import FSMContext
 
-from ..message_utils.message_setting_classes import TypesMedia
+from ..message_utils.message_setting_classes import TypesMedia, MessageSetting, MediaSetting
 
-from bot.utils.message_utils.message_utils import MessageSetting
 from bot.utils.helper import get_data_state
-from bot.utils.message_utils.message_setting_classes import MediaSetting
 
 from bot.utils.cache_utils.operators import CacheMediaObj
 

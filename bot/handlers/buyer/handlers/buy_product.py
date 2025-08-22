@@ -7,7 +7,7 @@ from bot.utils.helper import get_data_state
 from bot.handlers.handlers_import import *
 from bot.handlers.utils import repack_choice_catalog_data
 from bot.managers.catalog_manager.catalog_managers import ProductCatalogManager
-from bot.handlers.utils import create_menu_catalog
+from bot.handlers.utils import create_menu_catalog, send_catalog_message
 from bot.services.product.services import ProductService
 
 from bot.utils.message_utils.keyboard_utils import parse_callback, create_callback
@@ -50,7 +50,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_serv
         elif action == 'back':
             catalog_manager: ProductCatalogManager
             (catalog_manager,) = await get_data_state(state, ParamFSM.BotMessagesData.CATALOG_MANAGER)
-            new_message = catalog_manager.create_message()
+            await send_catalog_message(state, cb.bot, catalog_manager.create_message())
     elif subscope == 'info_product':
         if action == 'send_answer':
             pass

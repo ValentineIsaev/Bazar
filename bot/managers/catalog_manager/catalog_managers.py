@@ -1,11 +1,14 @@
 from abc import abstractmethod
 
+from aiogram.fsm.context import FSMContext
+
 from bot.configs.constants import ROW_BUTTON_CATALOG_MENU
 
 from bot.services.product.services import CatalogMenuService
 from bot.services.product.dto import Product
 
-from bot.utils.message_utils.message_utils import create_list_message
+from bot.utils.message_utils.media_messages_utils import delete_media_message
+from bot.utils.message_utils.message_utils import create_list_message, send_message
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (create_callback_inline_keyboard,
                                                     add_callback_inline_keyboard,

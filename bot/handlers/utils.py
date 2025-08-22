@@ -5,7 +5,8 @@ from aiogram.fsm.state import State
 from bot.configs.constants import ParamFSM
 from bot.utils.helper import get_data_state
 
-from bot.utils.message_utils.message_utils import send_message, MessageSetting
+from bot.utils.message_utils.media_messages_utils import delete_media_message
+from bot.utils.message_utils.message_utils import send_message, MessageSetting, delete_bot_message
 
 from bot.services.product.services import ProductService
 
@@ -32,6 +33,16 @@ async def create_menu_catalog(state: FSMContext, choice_callback: str,
     await state.update_data(**{ParamFSM.BotMessagesData.CATALOG_MANAGER: catalog_manager})
 
     return catalog_manager.create_message()
+
+async def send_catalog_message(state: FSMContext, bot: Bot, message: MessageSetting):
+    is_send_new = False
+
+    await delete_media_message(state)
+    if message.media is not None or message.cache_media is not None:
+        await delete_bot_message(state)
+        is_send_new = True
+
+    await send_message(state, bot, message, is_send_new)
 
 async def repack_choice_catalog_data(state: FSMContext, callback: str):
     catalog_manager: ProductCatalogHierarchyManager
