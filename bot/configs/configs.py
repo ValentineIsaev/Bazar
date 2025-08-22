@@ -18,9 +18,7 @@ class BotConfigs(ConfigBase):
 
 
 class DataBaseConfigs(ConfigBase):
-    DB_NAME: str
-    USER_PASSWORD: SecretStr
-    USER_NAME: str
+    DATABASE_URL: SecretStr
 
 
 class CacheConfigs(ConfigBase):
