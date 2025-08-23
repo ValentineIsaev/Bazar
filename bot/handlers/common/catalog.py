@@ -4,6 +4,7 @@ from aiogram.types import CallbackQuery
 
 from bot.constants.redis_keys import FSMKeys
 from bot.handlers.utils import send_catalog_message
+from bot.managers.session_manager.session import UserSession
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (parse_callback)
 from bot.utils.filters import CallbackFilter
@@ -14,7 +15,7 @@ catalog_menu_router = Router()
 
 
 @catalog_menu_router.callback_query(CallbackFilter('catalog_menu'))
-async def scroll_catalog_menu(cb: CallbackQuery, state: FSMContext):
+async def scroll_catalog_menu(cb: CallbackQuery, state: FSMContext, session: UserSession):
     _, subscope, action = parse_callback(cb.data)
 
     catalog_manager: CatalogManager
@@ -23,4 +24,4 @@ async def scroll_catalog_menu(cb: CallbackQuery, state: FSMContext):
         catalog_manager.scroll_catalog(action)
         await state.update_data(**{FSMKeys.CATALOG_MANAGER: catalog_manager})
         new_msg: MessageSetting = catalog_manager.create_message()
-        await send_catalog_message(state, cb.bot, new_msg)
+        await send_catalog_message(session, cb.bot, new_msg)

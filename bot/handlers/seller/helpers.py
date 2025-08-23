@@ -68,5 +68,5 @@ async def complete_product(state: FSMContext) -> tuple[None | MessageSetting, St
     # else:
     return (MessageSetting(text=COMPLETE_ADD_PRODUCT_MESSAGE.insert((complete_text,)),
                                  keyboard=ADD_PRODUCT_COMPLETE_KEYBOARD,
-                                 cache_media=product.media),
+                                 cache_media=product.media.get_cache()),
             AddProductStates.user_checking)

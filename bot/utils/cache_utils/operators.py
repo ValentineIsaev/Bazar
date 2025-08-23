@@ -7,7 +7,7 @@ from aiogram import Bot
 from aiogram.types import PhotoSize, Video
 
 from bot.utils.exception import SingleUseCache
-from bot.utils.message_utils.message_setting_classes import TypesMedia
+from bot.utils.message_utils.message_setting_classes import TypesMedia, InputMedia, TypesMedia
 
 from bot.configs.configs import cache_configs
 
@@ -57,25 +57,22 @@ class CacheMediaOperator(CacheOperator):
     def _cache_dir(self) -> Path:
         return cache_configs.CACHE_MEDIA_DIR
 
-    async def __save_media_file(self, media: PhotoSize | Video, bot: Bot) -> CacheMediaObj:
+    async def __save_media_file(self, media: InputMedia, bot: Bot) -> CacheMediaObj:
         ext = ''
         file_id = media.file_id
         file = await bot.get_file(file_id)
-        type_media = ''
 
-        if isinstance(media, PhotoSize):
+        if media.type_media == TypesMedia.TYPE_PHOTO:
             ext = self.PHOTO_EXT
-            type_media = TypesMedia.TYPE_PHOTO
-        elif isinstance(media, Video):
+        elif media.type_media == TypesMedia.TYPE_VIDEO:
             ext = self.VIDEO_EXT
-            type_media = TypesMedia.TYPE_VIDEO
 
         destination: Path = self._cache_path / f'{file_id}{ext}'
         await bot.download_file(file.file_path, destination)
 
-        return CacheMediaObj(destination, type_media)
+        return CacheMediaObj(destination, media.type_media)
 
-    async def caching_data(self, media: PhotoSize | Video | list[PhotoSize | Video], bot: Bot=None, *args) -> None:
+    async def caching_data(self, media: InputMedia | list[InputMedia], bot: Bot=None, *args) -> None:
         """
         This func caching and saved media data
         :param bot: aiogram bot

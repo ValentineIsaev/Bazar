@@ -53,7 +53,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_serv
         elif action == 'back':
             catalog_manager: ProductCatalogManager
             (catalog_manager,) = await get_data_state(state, FSMKeys.CATALOG_MANAGER)
-            await send_catalog_message(state, cb.bot, catalog_manager.create_message())
+            await send_catalog_message(session, cb.bot, catalog_manager.create_message())
     elif subscope == 'info_product':
         if action == 'send_answer':
             pass

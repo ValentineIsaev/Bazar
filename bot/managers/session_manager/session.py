@@ -20,9 +20,17 @@ class UserSession:
         return None
 
     async def get_values(self, *keys: str) -> tuple:
-        return tuple(await self.get_value(key) for key in keys)
+        values = []
+        for key in keys:
+            value = await self.get_value(key)
+            values.append(value)
+        return tuple(values)
 
-    async def update_data(self, **data):
+    async def set_value(self, key: str, data):
+        mapping = {key: pickle.dumps(data)}
+        await self._redis.hset(name=str(self.id), mapping=mapping)
+
+    async def set_values(self, **data):
         serialized_data: dict = {}
         for key, saved_data in data.items():
             serialized_data[key] = pickle.dumps(saved_data)

@@ -1,7 +1,7 @@
 from bot.handlers.handlers_import import *
 
 from aiogram import F
-from aiogram.filters import StateFilter, or_f
+from aiogram.filters import StateFilter, or_f, and_f
 
 from ..helpers import *
 from bot.handlers.utils import create_menu_catalog
@@ -77,7 +77,7 @@ async def add_description(msg: Message, state: FSMContext, session: UserSession)
                      Command('skip'),
                      StateFilter(AddProductStates.add_photo, EditProductStates.EditParam.edit_photo)))
 async def add_photo(msg: Message, state: FSMContext, session: UserSession):
-    album = await input_media_album(state, msg, PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, PHOTO_INPUT_STOP_TEXT)
+    album = await input_media_album(msg.bot, state, msg, PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, PHOTO_INPUT_STOP_TEXT)
     is_skip = msg.text == SKIP_INPUT_PHOTO_COMMAND
     if album or is_skip:
         user_data = None

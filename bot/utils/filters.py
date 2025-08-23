@@ -11,8 +11,8 @@ class TypeUserFilter(BaseFilter):
         self._user = type_user
 
     async def __call__(self, event: Message | CallbackQuery):
-        session = user_session_manager.get_session(event.from_user.id, event.chat.id)
-        type_user = session.get_value(UserSessionKeys.USERTYPE)
+        session = user_session_manager.get_session(event.from_user.id)
+        type_user = await session.get_value(UserSessionKeys.USERTYPE)
         return type_user == self._user
 
 

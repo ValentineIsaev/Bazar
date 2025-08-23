@@ -31,7 +31,7 @@ async def send_help(message: Message, session: UserSession):
 
 @unexpected_router.callback_query()
 async def errors_callback(cb: CallbackQuery, session: UserSession):
-    type_user = session.get_value(UserSessionKeys.USERTYPE)
+    type_user = await session.get_value(UserSessionKeys.USERTYPE)
     print(type_user)
     print(f'Errors callback: {cb.data}')
 

@@ -13,9 +13,9 @@ from bot.constants.redis_keys import UserSessionKeys, FSMKeys
 from bot.utils.helper import get_data_state
 
 
-async def delete_bot_message(session: UserSession) -> None:
-    bot_message: Message = await session.get_value(UserSessionKeys.BOTS_MESSAGE)
-    await bot_message.delete()
+async def delete_bot_message(session: UserSession, bot: Bot) -> None:
+    bot_message_id, chat_id = await session.get_values(UserSessionKeys.BOTS_MESSAGE_ID, UserSessionKeys.CHAT_ID)
+    await bot.delete_message(chat_id, bot_message_id)
 
 
 async def send_message(session: UserSession, bot: Bot, data: MessageSetting, is_send_new=True):
@@ -30,15 +30,15 @@ async def send_message(session: UserSession, bot: Bot, data: MessageSetting, is_
 
 
 async def send_text_message(session: UserSession, bot: Bot, data: MessageSetting, is_send_new=True):
-    bot_msg, chat_id = await session.get_values(UserSessionKeys.BOTS_MESSAGE, UserSessionKeys.CHAT_ID)
+    bot_msg_id, chat_id = await session.get_values(UserSessionKeys.BOTS_MESSAGE_ID, UserSessionKeys.CHAT_ID)
 
     if is_send_new:
         bot_msg = await bot.send_message(chat_id=chat_id, text=data.text,
                                reply_markup=data.keyboard, parse_mode=data.parse_mode)
-        await session.set_value(UserSessionKeys.BOTS_MESSAGE, bot_msg)
+        await session.set_value(UserSessionKeys.BOTS_MESSAGE_ID, bot_msg.message_id)
     else:
         await bot.edit_message_text(text=data.text, chat_id=chat_id,
-                                    message_id=bot_msg.message_id, parse_mode=data.parse_mode,
+                                    message_id=bot_msg_id, parse_mode=data.parse_mode,
                                     reply_markup=data.keyboard)
 
 

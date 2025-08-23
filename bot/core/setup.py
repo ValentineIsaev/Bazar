@@ -9,7 +9,7 @@ from bot.services.product.services import ProductService
 from bot.database.core import SessionLocal
 from bot.managers.mediator.manager import MediatorManager
 
-from bot.redis.core import user_session_redis
+from bot.storage.core import user_session_redis
 
 from bot.configs.configs import cache_configs, bot_configs
 
@@ -24,14 +24,14 @@ db_session_middleware = DBSessionMiddleware(SessionLocal)
 di_user_middleware = DIUserMiddleware(mediator_manager=lambda: MediatorManager(user_session_manager))
 
 def registration_middlewares(dp: Dispatcher):
-    dp.message.middleware(user_session_middleware)
     dp.message.middleware(di_middleware)
     dp.message.middleware(di_user_middleware)
+    dp.message.middleware(user_session_middleware)
     dp.message.middleware(db_session_middleware)
 
-    dp.callback_query(user_session_middleware)
     dp.callback_query.middleware(di_middleware)
     dp.callback_query.middleware(di_user_middleware)
+    dp.callback_query.middleware(user_session_middleware)
     dp.callback_query.middleware(db_session_middleware)
 
 def clear_cache(cache_dir: Path):

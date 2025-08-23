@@ -12,6 +12,14 @@ class TypesMedia(Enum):
     TYPE_VIDEO = 'video'
 
 @dataclass
+class InputMedia:
+    message_id: int
+    chat_id: int
+
+    file_id: str
+    type_media: str
+
+@dataclass
 class MediaSetting:
     type_media: str
 

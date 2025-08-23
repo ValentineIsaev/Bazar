@@ -35,19 +35,19 @@ async def create_menu_catalog(state: FSMContext, choice_callback: str,
 
     return catalog_manager.create_message()
 
-async def send_catalog_message(state: FSMContext, bot: Bot, message: MessageSetting):
+async def send_catalog_message(session: UserSession, bot: Bot, message: MessageSetting):
     is_send_new = False
 
-    await delete_media_message(state)
+    await delete_media_message(session, bot)
     if message.media is not None or message.cache_media is not None:
-        await delete_bot_message(state)
+        await delete_bot_message(session, bot)
         is_send_new = True
 
-    await send_message(state, bot, message, is_send_new)
+    await send_message(session, bot, message, is_send_new)
 
 async def repack_choice_catalog_data(state: FSMContext, callback: str):
     catalog_manager: ProductCatalogHierarchyManager
-    (catalog_manager,) = await get_data_state(state, ParamFSM.BotMessagesData.CATALOG_MANAGER)
+    (catalog_manager,) = await get_data_state(state, FSMKeys.CATALOG_MANAGER)
     catalog_callback, catalog_menu = catalog_manager.choice_callback, catalog_manager.catalog
 
     number_catalog = int(callback.replace(f'{catalog_callback}-', ''))

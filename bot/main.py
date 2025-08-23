@@ -17,7 +17,7 @@ import asyncio
 
 
 async def main():
-    bot, user_session = await setup()
+    bot = await setup()
     dp = Dispatcher(storage=MemoryStorage())
 
     registration_middlewares(dp)
