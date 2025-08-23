@@ -1,5 +1,5 @@
 from redis.asyncio import Redis
-import pickle
+import dill as pickle
 
 class UserSession:
     def __init__(self, redis: Redis, id_session: int):
@@ -8,7 +8,6 @@ class UserSession:
 
     async def get_all_data(self) -> dict:
         all_data = await self._redis.hgetall(name=str(self.id))
-
         return {
             field_name: pickle.loads(value)
             for field_name, value in all_data.items()
@@ -23,19 +22,16 @@ class UserSession:
     async def get_values(self, *keys: str) -> tuple:
         return tuple(await self.get_value(key) for key in keys)
 
-
     async def update_data(self, **data):
         serialized_data: dict = {}
         for key, saved_data in data.items():
             serialized_data[key] = pickle.dumps(saved_data)
-
         await self._redis.hset(name=str(self.id), mapping=serialized_data)
 
 
 class SessionManager:
     def __init__(self, redis: Redis):
         self._redis = redis
-
         self._sessions: dict = {}
 
     def get_session(self, user_id: int) -> UserSession:

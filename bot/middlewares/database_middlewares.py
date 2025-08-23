@@ -7,5 +7,5 @@ class DBSessionMiddleware(BaseMiddleware):
 
     async def __call__(self, handler, event, data):
         async with self._session_factory() as session:
-            data['session'] = session
+            data['db_session'] = session
             return await handler(event, data)

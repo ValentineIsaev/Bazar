@@ -33,7 +33,7 @@ class UserSessionMiddleware(BaseMiddleware):
         self._session_manager = session_manager
 
     async def __call__(self, handler, event: Message | CallbackQuery, data: dict):
-        user_id = event.from_user.id
-        data['session'] = self._session_manager.get_session(user_id)
+        user_id, chat_id = event.from_user.id, event.chat.id
+        data['session'] = self._session_manager.get_session(user_id, chat_id)
 
         return await handler(event, data)

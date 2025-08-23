@@ -1,8 +1,9 @@
 from .handlers_import import *
 
+from bot.managers.session_manager.session import UserSession
 from aiogram.fsm.state import State
 
-from bot.configs.constants import ParamFSM
+from bot.constants.redis_keys import UserSessionKeys, FSMKeys
 from bot.utils.helper import get_data_state
 
 from bot.utils.message_utils.media_messages_utils import delete_media_message
@@ -13,16 +14,16 @@ from bot.services.product.services import ProductService
 from bot.managers.catalog_manager.catalog_managers import ProductCatalogHierarchyManager
 
 
-async def user_start_handler(bot: Bot, state: FSMContext, base_state: State, user_type: str,
+async def user_start_handler(bot: Bot, session: UserSession, state: FSMContext, base_state: State, user_type: str,
                              start_message: MessageSetting):
     if await state.get_state() != base_state:
         await state.set_state(base_state)
 
-    now_user_type = await get_data_state(state, ParamFSM.UserData.TYPE_USER)
-    if now_user_type != user_type:
-        await state.update_data(**{ParamFSM.UserData.TYPE_USER: user_type})
+    now_type_user = await session.get_value(UserSessionKeys.USERTYPE)
+    if now_type_user != user_type:
+        await session.set_value(UserSessionKeys.USERTYPE, user_type)
 
-    await send_message(state, bot, start_message)
+    await send_message(session, bot, start_message)
 
 
 async def create_menu_catalog(state: FSMContext, choice_callback: str,
@@ -30,7 +31,7 @@ async def create_menu_catalog(state: FSMContext, choice_callback: str,
     catalog_service = product_service.get_product_catalog()
     catalog_manager = ProductCatalogHierarchyManager(catalog_service, choice_callback)
 
-    await state.update_data(**{ParamFSM.BotMessagesData.CATALOG_MANAGER: catalog_manager})
+    await state.update_data(**{FSMKeys.CATALOG_MANAGER: catalog_manager})
 
     return catalog_manager.create_message()
 

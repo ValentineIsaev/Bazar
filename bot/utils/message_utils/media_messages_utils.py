@@ -6,15 +6,14 @@ from aiogram.fsm.context import FSMContext
 
 from ..message_utils.message_setting_classes import TypesMedia, MessageSetting, MediaSetting
 
-from bot.utils.helper import get_data_state
-
 from bot.utils.cache_utils.operators import CacheMediaObj
+from bot.managers.session_manager.session import UserSession
 
-from bot.configs.constants import ParamFSM
+from bot.constants.redis_keys import UserSessionKeys, FSMKeys
 
 
-async def delete_media_message(state: FSMContext):
-    (bots_media_message,) = await get_data_state(state, ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE)
+async def delete_media_message(session: UserSession):
+    bots_media_message = await session.get_value(UserSessionKeys.BOTS_MEDIA_MESSAGE)
     if bots_media_message is not None:
         if isinstance(bots_media_message, Message):
             await bots_media_message.delete()
@@ -22,8 +21,7 @@ async def delete_media_message(state: FSMContext):
             for msg in bots_media_message:
                 await msg.delete()
 
-        await state.update_data(**{ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE: None})
-
+        await session.set_value(UserSessionKeys.BOTS_MEDIA_MESSAGE, None)
 
 
 lock = asyncio.Lock()
@@ -31,8 +29,8 @@ async def input_media_album(state: FSMContext, msg: Message,  answer_message: Me
                             stop_text: str, max_len: int = 3) -> list | list[Message]:
     async with lock:
         result = []
-        media_list: list[Message] | None = await state.get_value(ParamFSM.BotMessagesData.InputMediaAlbum.INPUTS_MEDIA)
-        bots_messages: list[Message] | None = await state.get_value(ParamFSM.BotMessagesData.InputMediaAlbum.BOTS_MESSAGES)
+        media_list: list[Message] | None = await state.get_value(FSMKeys.InputMediaAlbum.INPUTS_MEDIA_MESSAGES)
+        bots_messages: list[Message] | None = await state.get_value(FSMKeys.InputMediaAlbum.SENT_BOTS_MESSAGES)
         if media_list is None:
             media_list = []
         if bots_messages is None:
@@ -69,15 +67,15 @@ async def input_media_album(state: FSMContext, msg: Message,  answer_message: Me
                                             reply_markup=answer_message.keyboard)
             bots_messages.append(sent_message)
 
-        await state.update_data(**{ParamFSM.BotMessagesData.InputMediaAlbum.INPUTS_MEDIA:
+        await state.update_data(**{FSMKeys.InputMediaAlbum.INPUTS_MEDIA_MESSAGES:
                                        media_list,
-                                   ParamFSM.BotMessagesData.InputMediaAlbum.BOTS_MESSAGES:
+                                   FSMKeys.InputMediaAlbum.SENT_BOTS_MESSAGES:
                                    bots_messages})
 
         return result
 
 
-async def send_cached_media_message(state: FSMContext, bot: Bot, data: MessageSetting) -> None:
+async def send_cached_media_message(session: UserSession, bot: Bot, data: MessageSetting) -> None:
     if isinstance(data.cache_media, tuple):
         media_path = tuple(MediaSetting(path=media.path, type_media=media.type_media)
                            for media in data.cache_media)
@@ -88,11 +86,11 @@ async def send_cached_media_message(state: FSMContext, bot: Bot, data: MessageSe
         raise ValueError(f'Wrong type cache media: {type(data.cache_media)}')
     data.media = media_path
 
-    await send_media_message(state, bot, data)
+    await send_media_message(session, bot, data)
 
 
-async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) -> None:
-    (chat_id,) = await get_data_state(state, ParamFSM.BotMessagesData.CHAT_ID)
+async def send_media_message(session: UserSession, bot: Bot, data: MessageSetting) -> None:
+    chat_id = await session.get_value(UserSessionKeys.CHAT_ID)
     if data.media is None:
         raise ValueError('Media data is clear!')
 
@@ -138,4 +136,4 @@ async def send_media_message(state: FSMContext, bot: Bot, data: MessageSetting) 
                                                  reply_markup=data.keyboard)
 
     if media_message is not None:
-        await state.update_data(**{ParamFSM.BotMessagesData.BOT_MEDIA_MESSAGE: media_message})
+        await session.set_value(UserSessionKeys.BOTS_MEDIA_MESSAGE, media_message)
