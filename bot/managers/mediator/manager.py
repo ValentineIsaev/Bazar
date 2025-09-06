@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 from bot.managers.session_manager.session import SessionManager
 
 from bot.utils.message_utils.message_setting_classes import MessageSetting
@@ -7,5 +8,4 @@ from bot.utils.message_utils.message_setting_classes import MessageSetting
 
 # FSM
 class MediatorManager:
-    def __init__(self, _):
-        pass
+    pass

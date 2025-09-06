@@ -28,6 +28,9 @@ def upgrade() -> None:
     sa.Column('action', sa.String(), nullable=False),
     sa.Column('msg_text', sa.String(), nullable=True),
     sa.Column('msg_media', sa.String(), nullable=True),
+    sa.Column('sender_role', sa.String(), nullable=True),
+    sa.Column('chat_name', sa.String(), nullable=False),
+    sa.Column('chat_id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
