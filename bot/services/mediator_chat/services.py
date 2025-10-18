@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from bot.managers.session_manager.session import SessionManager
-from bot.database.models.mediator_models import ChatMediatorBase
+from bot.storage.database.models import ChatMediatorBase
 
-from bot.database.repository import MediatorRepository
+from bot.storage.database.repository import MediatorRepository
 
 from .dto import ChatMessage, Chat
 

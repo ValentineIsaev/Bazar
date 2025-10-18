@@ -7,7 +7,7 @@ from bot.services.product.services import CatalogMenuService
 from bot.utils.helper import get_data_state
 from bot.handlers.handlers_import import *
 from bot.handlers.utils import repack_choice_catalog_data
-from bot.managers.catalog_manager.catalog_managers import ProductCatalogManager
+from bot.components.catalog_render import ProductCatalogManager
 from bot.handlers.utils import create_menu_catalog, send_catalog_message
 from bot.services.product.services import ProductService
 

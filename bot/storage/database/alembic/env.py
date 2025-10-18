@@ -1,13 +1,13 @@
 from logging.config import fileConfig
 
-from sqlalchemy.ext.asyncio import async_engine_from_config, AsyncEngine
+from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
 
 import asyncio
 
 from alembic import context
 
-from bot.database.models.mediator_models import Base
+from bot.storage.database.models import Base
 from bot.configs.configs import db_configs
 
 # this is the Alembic Config object, which provides
@@ -26,6 +26,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
+print(target_metadata.schema)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

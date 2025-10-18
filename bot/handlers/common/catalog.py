@@ -8,7 +8,7 @@ from bot.managers.session_manager.session import UserSession
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (parse_callback)
 from bot.utils.filters import CallbackFilter
-from bot.managers.catalog_manager.catalog_managers import CatalogManager
+from bot.components.catalog_render import CatalogManager
 from bot.utils.helper import get_data_state
 
 catalog_menu_router = Router()

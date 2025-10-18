@@ -2,14 +2,13 @@ from dataclasses import dataclass
 
 from asyncio import run
 
-from pathlib import Path
 from bot.configs.constants import UserTypes
 
 from bot.services.buyer_chat.services import BuyerChatService
 from bot.services.buyer_chat.dto import ChatMessage
-from bot.database.repository import MediatorRepository
+from bot.storage.database.repository import MediatorRepository
 
-from bot.database.core import SessionLocal
+from bot.storage.database.core import SessionLocal
 
 @dataclass
 class TestSendData:

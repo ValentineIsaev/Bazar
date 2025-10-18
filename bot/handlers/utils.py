@@ -11,7 +11,7 @@ from bot.utils.message_utils.message_utils import send_message, MessageSetting, 
 
 from bot.services.product.services import ProductService
 
-from bot.managers.catalog_manager.catalog_managers import ProductCatalogHierarchyManager
+from bot.components.catalog_render import ProductCatalogHierarchyManager
 
 
 async def user_start_handler(bot: Bot, session: UserSession, state: FSMContext, base_state: State, user_type: str,

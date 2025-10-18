@@ -8,7 +8,7 @@ class UserSessionKeys:
 
 
 class FSMKeys:
-    CATALOG_MANAGER = 'catalog_manager'
+    CATALOG_MANAGER = 'catalog_render'
 
     class InputMediaAlbum:
         INPUTS_MEDIA_MESSAGES_ID = 'input_media_messages'

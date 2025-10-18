@@ -1,9 +1,7 @@
 from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.fsm.storage.redis import RedisStorage
 
 from bot.core.setup import setup, registration_middlewares
-from database.core import SessionLocal
 
 from handlers import (seller_router,
                       buyer_router,

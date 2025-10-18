@@ -6,10 +6,10 @@ from bot.middlewares.database_middlewares import DBSessionMiddleware
 
 from bot.managers.session_manager.session import SessionManager
 from bot.services.product.services import ProductService
-from bot.database.core import SessionLocal
+from bot.storage.database.core import SessionLocal
 from bot.managers.mediator.manager import MediatorManager
 
-from bot.storage.core import user_session_redis
+from bot.storage.redis.core import user_session_redis
 
 from bot.configs.configs import cache_configs, bot_configs
 
