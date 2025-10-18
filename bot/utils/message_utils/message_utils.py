@@ -7,35 +7,35 @@ from aiogram.types import Message
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from .media_messages_utils import send_media_message, send_cached_media_message
 
-from bot.managers.session_manager.session import UserSession
 from bot.constants.redis_keys import UserSessionKeys, FSMKeys
+from bot.storage.redis import Storage
 
 from bot.utils.helper import get_data_state
 
 
-async def delete_bot_message(session: UserSession, bot: Bot) -> None:
-    bot_message_id, chat_id = await session.get_values(UserSessionKeys.BOTS_MESSAGE_ID, UserSessionKeys.CHAT_ID)
+async def delete_bot_message(storage: Storage, bot: Bot) -> None:
+    bot_message_id, chat_id = await storage.get_data(UserSessionKeys.BOTS_MESSAGE_ID, UserSessionKeys.CHAT_ID)
     await bot.delete_message(chat_id, bot_message_id)
 
 
-async def send_message(session: UserSession, bot: Bot, data: MessageSetting, is_send_new=True):
+async def send_message(storage: Storage, bot: Bot, data: MessageSetting, is_send_new=True):
     is_send_new = True if data.media is not None or data.cache_media is not None else is_send_new
     if data.media is not None:
-        await send_media_message(session, bot, MessageSetting(media=data.media))
+        await send_media_message(storage, bot, MessageSetting(media=data.media))
     if data.cache_media is not None:
-        await send_cached_media_message(session, bot, MessageSetting(cache_media=data.cache_media))
+        await send_cached_media_message(storage, bot, MessageSetting(cache_media=data.cache_media))
 
-    await send_text_message(session, bot, data, is_send_new)
+    await send_text_message(storage, bot, data, is_send_new)
 
 
 
-async def send_text_message(session: UserSession, bot: Bot, data: MessageSetting, is_send_new=True):
-    bot_msg_id, chat_id = await session.get_values(UserSessionKeys.BOTS_MESSAGE_ID, UserSessionKeys.CHAT_ID)
+async def send_text_message(storage: Storage, bot: Bot, data: MessageSetting, is_send_new=True):
+    bot_msg_id, chat_id = await storage.get_data(UserSessionKeys.BOTS_MESSAGE_ID, UserSessionKeys.CHAT_ID)
 
     if is_send_new:
         bot_msg = await bot.send_message(chat_id=chat_id, text=data.text,
                                reply_markup=data.keyboard, parse_mode=data.parse_mode)
-        await session.set_value(UserSessionKeys.BOTS_MESSAGE_ID, bot_msg.message_id)
+        await storage.update_value(UserSessionKeys.BOTS_MESSAGE_ID, bot_msg.message_id)
     else:
         await bot.edit_message_text(text=data.text, chat_id=chat_id,
                                     message_id=bot_msg_id, parse_mode=data.parse_mode,

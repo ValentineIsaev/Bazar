@@ -1,5 +1,4 @@
 import asyncio
-from dataclasses import dataclass
 
 from aiogram import Bot
 from aiogram.types import Message, FSInputFile, InputMediaPhoto, InputMediaVideo
@@ -8,13 +7,13 @@ from aiogram.fsm.context import FSMContext
 from ..message_utils.message_setting_classes import TypesMedia, MessageSetting, MediaSetting, InputMedia
 
 from bot.utils.cache_utils.operators import CacheMediaObj
-from bot.managers.session_manager.session import UserSession
+from bot.storage.redis import Storage
 
 from bot.constants.redis_keys import UserSessionKeys, FSMKeys
 
 
-async def delete_media_message(session: UserSession, bot: Bot):
-    bots_media_message_id, chat_id = await session.get_values(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID,
+async def delete_media_message(storage: Storage, bot: Bot):
+    bots_media_message_id, chat_id = await storage.get_data(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID,
                                                               UserSessionKeys.CHAT_ID)
     if bots_media_message_id is not None:
         if isinstance(bots_media_message_id, int):
@@ -23,7 +22,7 @@ async def delete_media_message(session: UserSession, bot: Bot):
             for msg_id in bots_media_message_id:
                 await bot.delete_message(chat_id, msg_id)
 
-        await session.set_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, None)
+        await storage.update_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, None)
 
 
 def parse_media_data(msg: Message) -> InputMedia:
@@ -90,7 +89,7 @@ async def input_media_album(bot: Bot, state: FSMContext, msg: Message,  answer_m
         return result
 
 
-async def send_cached_media_message(session: UserSession, bot: Bot, data: MessageSetting) -> None:
+async def send_cached_media_message(storage: Storage, bot: Bot, data: MessageSetting) -> None:
     if isinstance(data.cache_media, tuple):
         media_path = tuple(MediaSetting(path=media.path, type_media=media.type_media)
                            for media in data.cache_media)
@@ -101,11 +100,11 @@ async def send_cached_media_message(session: UserSession, bot: Bot, data: Messag
         raise ValueError(f'Wrong type cache media: {type(data.cache_media)}')
     data.media = media_path
 
-    await send_media_message(session, bot, data)
+    await send_media_message(storage, bot, data)
 
 
-async def send_media_message(session: UserSession, bot: Bot, data: MessageSetting) -> None:
-    chat_id = await session.get_value(UserSessionKeys.CHAT_ID)
+async def send_media_message(storage: Storage, bot: Bot, data: MessageSetting) -> None:
+    chat_id = await storage.get_value(UserSessionKeys.CHAT_ID)
     if data.media is None:
         raise ValueError('Media data is clear!')
 
@@ -153,4 +152,4 @@ async def send_media_message(session: UserSession, bot: Bot, data: MessageSettin
         media_message_id = media_message.message_id
 
     if media_message_id is not None:
-        await session.set_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, media_message_id)
+        await storage.update_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, media_message_id)

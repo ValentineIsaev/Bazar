@@ -1,18 +1,17 @@
 from aiogram.filters import BaseFilter
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from bot.constants.redis_keys import UserSessionKeys
+from bot.constants.redis_keys import FSMKeys
 from bot.utils.message_utils.keyboard_utils import parse_callback
 
-from bot.core.setup import user_session_manager
 
 class TypeUserFilter(BaseFilter):
     def __init__(self, type_user: str):
         self._user = type_user
 
-    async def __call__(self, event: Message | CallbackQuery):
-        session = user_session_manager.get_session(event.from_user.id)
-        type_user = await session.get_value(UserSessionKeys.USERTYPE)
+    async def __call__(self, event: Message | CallbackQuery, state: FSMContext):
+        type_user = await state.get_value(FSMKeys.USERTYPE)
         return type_user == self._user
 
 

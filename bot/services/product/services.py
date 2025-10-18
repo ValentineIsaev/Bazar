@@ -34,7 +34,7 @@ class InputProductService:
             float(price)
             return ValidationResult(is_validate=True)
         except ValueError:
-            return ValidationResult(is_validate=False, error_message=INVALID_PRICE_MESSAGE)
+            return ValidationResult(is_validate=False, error=INVALID_PRICE_MESSAGE)
 
     def _validate_media(self, media: CacheMediaOperator) -> ValidationResult:
         return ValidationResult(is_validate=True)
