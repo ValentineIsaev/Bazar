@@ -3,30 +3,33 @@ from bot.storage.redis import Storage, FSMStorage
 from bot.utils.message_utils.message_utils import send_message
 
 from .messages import *
-from ..handlers_import import *
+from aiogram import Router
+from aiogram.filters import Command
+from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 common_router = Router()
 unexpected_router = Router()
 
 
 @common_router.message(Command('start'))
-async def handler_start(msg: Message, storage: Storage, fsm_storage: FSMStorage):
+async def handler_start(msg: Message, fsm_storage: FSMStorage):
     user_data = await fsm_storage.get_all_data()
     print(user_data)
     if not user_data:
-        await storage.update_data(**{UserSessionKeys.CHAT_ID: msg.chat.id,
-                                     UserSessionKeys.USERNAME: msg.from_user.first_name})
-        await fsm_storage.update_value(FSMKeys.USERTYPE, UserTypes.DEFAULTS)
-        await send_message(storage, msg.bot, START_MESSAGE)
+        await fsm_storage.update_data(**{UserSessionKeys.CHAT_ID: msg.chat.id,
+                                     UserSessionKeys.USERNAME: msg.from_user.first_name,
+                                         FSMKeys.USERTYPE: UserTypes.DEFAULTS})
+        await send_message(fsm_storage, msg.bot, START_MESSAGE)
     else:
         if FSMKeys.USERTYPE not in user_data.keys():
             raise ValueError('Error in logic')
-        await send_message(storage, msg.bot, DEFAULT_MESSAGES[user_data[FSMKeys.USERTYPE]])
+        await send_message(fsm_storage, msg.bot, DEFAULT_MESSAGES[user_data[FSMKeys.USERTYPE]])
 
 
 @common_router.message(Command('help'))
-async def send_help(message: Message, storage: Storage):
-    await send_message(storage, message.bot, HELP_MESSAGE)
+async def send_help(message: Message, fsm_storage: FSMStorage):
+    await send_message(fsm_storage, message.bot, HELP_MESSAGE)
 
 
 @unexpected_router.callback_query()

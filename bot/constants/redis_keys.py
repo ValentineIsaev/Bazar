@@ -9,7 +9,9 @@ class UserSessionKeys:
 
 
 class FSMKeys:
-    CATALOG_MANAGER = 'catalog_render'
+    class CatalogData:
+        CATALOG_RENDERER = 'catalog_renderer'
+        CATALOG_SERVICE = 'catalog_service'
     USERTYPE = 'user_type'
 
     class InputMediaAlbum:

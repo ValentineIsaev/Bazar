@@ -12,6 +12,16 @@ class TypesMedia(Enum):
     TYPE_VIDEO = 'video'
 
 @dataclass
+class CallbackSetting:
+    scope: str
+    subscope: str | None = None
+    action: str | None = None
+
+    @property
+    def callback(self):
+        return f'{self.scope}:{self.subscope}:{self.action}'
+
+@dataclass
 class InputMedia:
     message_id: int
     chat_id: int

@@ -1,5 +1,8 @@
+from typing import Any
+
+
 class CatalogMenuService:
-    def __init__(self, catalogs: tuple, page_capacity: int):
+    def __init__(self, catalogs: tuple[tuple[int, Any], ...], page_capacity: int):
         self._page = 0
         self._catalogs = catalogs
 
@@ -21,7 +24,11 @@ class CatalogMenuService:
         if self._page > 0:
             self._page -= 1
 
-    def get_catalogs(self) -> tuple:
+    def get_element_by_id(self, id_element: int) -> Any:
+        index = next(i for i, j in enumerate(self._catalogs) if j[0] == id_element)
+        return self._catalogs[index][1]
+
+    def get_page_catalogs(self) -> tuple:
         start_index = self._page * self._page_capacity
         end_index = min(start_index + self._page_capacity, len(self._catalogs))
 

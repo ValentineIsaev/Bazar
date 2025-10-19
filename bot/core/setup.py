@@ -1,7 +1,8 @@
 from pathlib import Path
 import shutil
 
-from bot.dependencies import DIMiddleware, get_product_manager
+from bot.dependencies import (DIMiddleware, set_product_manager, set_input_product_manager, set_catalog_manager,
+                              set_product_category_catalog_manager)
 
 from bot.storage.database import SessionLocal
 from bot.storage.redis.core import user_session_redis
@@ -14,7 +15,10 @@ async def set_dependencies(dp: Dispatcher):
     async with SessionLocal() as session:
         dp['db_session'] = session
 
-    di_middleware = DIMiddleware(product_manager=get_product_manager)
+    di_middleware = DIMiddleware(product_manager=set_product_manager,
+                                 input_product_manager=set_input_product_manager,
+                                 catalog_manager=set_catalog_manager,
+                                 product_category_catalog_manager=set_product_category_catalog_manager)
     dp.message.middleware(di_middleware)
     dp.callback_query.middleware(di_middleware)
 

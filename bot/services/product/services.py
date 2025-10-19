@@ -1,12 +1,9 @@
 from pathlib import Path
 from dataclasses import dataclass
 
-from bot.utils.message_utils.message_utils import MessageSetting
 from bot.utils.cache_utils.operators import CacheMediaOperator
 
 from .dto import Product
-from ...utils.message_utils.message_setting_classes import MediaSetting, TypesMedia
-from ..catalog_service.catalog import CatalogMenuService
 
 
 @dataclass
