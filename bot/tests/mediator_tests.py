@@ -6,9 +6,9 @@ from bot.configs.constants import UserTypes
 
 from bot.services.buyer_chat.services import BuyerChatService
 from bot.services.buyer_chat.dto import ChatMessage
-from bot.storage.database.repository import MediatorRepository
+from bot.storage.postgres.repository import MediatorRepository
 
-from bot.storage.database.core import SessionLocal
+from bot.storage.postgres.core import SessionLocal
 
 @dataclass
 class TestSendData:

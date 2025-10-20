@@ -2,7 +2,7 @@ import math
 
 from aiogram import Bot
 
-from bot.utils.message_utils.message_setting_classes import MessageSetting
+from .config_obj import MessageSetting
 from .media_messages_utils import send_media_message, send_cached_media_message
 
 from bot.constants.redis_keys import UserSessionKeys
@@ -36,17 +36,3 @@ async def send_text_message(fsm_storage: FSMStorage, bot: Bot, data: MessageSett
         await bot.edit_message_text(text=data.text, chat_id=chat_id,
                                     message_id=bot_msg_id, parse_mode=data.parse_mode,
                                     reply_markup=data.keyboard)
-
-
-def create_list_message(values: tuple[...] | list[...], columns: int, partition: str= 5*'\t') -> str:
-    result = ''
-    lines = math.ceil(len(values) / columns)
-
-    for i in range(lines):
-        for j in range(columns):
-            index = i + j * lines
-            if index < len(values):
-                result += f'{str(values[index])}{partition}'
-        result += '\n'
-
-    return result

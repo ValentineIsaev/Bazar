@@ -1,18 +1,23 @@
 from dataclasses import dataclass
 from pathlib import Path
-from enum import Enum
+import re
 
 from aiogram.types import inline_keyboard_markup
 
 from bot.utils.cache_utils.cache_obj import CacheMediaObj
 
 
-class TypesMedia(Enum):
-    TYPE_PHOTO = 'photo'
-    TYPE_VIDEO = 'video'
+@dataclass()
+class InlineButtonSetting:
+    text: str = None
+    callback: str = None
+    url: str = None
+
 
 @dataclass
 class CallbackSetting:
+    _CALLBACK_STRUCTURE = r'^[^:]+/[^:]+/[^:]+$'
+
     scope: str
     subscope: str | None = None
     action: str | None = None
@@ -21,6 +26,17 @@ class CallbackSetting:
     def callback(self):
         return f'{self.scope}:{self.subscope}:{self.action}'
 
+    @staticmethod
+    def decode_callback(callback: str) -> tuple[str, str, str]:
+        if re.search(CallbackSetting._CALLBACK_STRUCTURE, callback):
+            return callback.split('/')
+        raise ValueError('This is not a callback')
+
+    @staticmethod
+    def encode_callback(scope: str, subscope: str, action: str) -> str:
+        return f'{scope}/{subscope}/{action}'
+
+
 @dataclass
 class InputMedia:
     message_id: int
@@ -28,6 +44,7 @@ class InputMedia:
 
     file_id: str
     type_media: str
+
 
 @dataclass
 class MediaSetting:

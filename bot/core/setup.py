@@ -4,7 +4,7 @@ import shutil
 from bot.dependencies import (DIMiddleware, set_product_manager, set_input_product_manager, set_catalog_manager,
                               set_product_category_catalog_manager)
 
-from bot.storage.database import SessionLocal
+from bot.storage.postgres import SessionLocal
 from bot.storage.redis.core import user_session_redis
 
 from bot.configs.configs import cache_configs, bot_configs

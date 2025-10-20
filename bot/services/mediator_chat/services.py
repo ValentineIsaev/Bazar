@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from bot.storage.database.models import ChatMediatorBase
+from bot.storage.postgres.models import ChatMediatorBase
 
-from bot.storage.database.repository import MediatorRepository
+from bot.storage.postgres.repository import MediatorRepository
 
 from .dto import ChatMessage, Chat
 

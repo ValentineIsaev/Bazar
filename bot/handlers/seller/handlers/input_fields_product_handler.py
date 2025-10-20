@@ -94,7 +94,7 @@ async def add_product_actions(cb: CallbackQuery, state: FSMContext, fsm_storage:
                                           selected_catalog, is_delete_user_message=False)
 
     elif action == 'send_product':
-        await send_message(fsm_storage, cb.bot, MessageSetting(text='ожидайте', keyboard=create_callback_inline_keyboard(
+        await send_message(fsm_storage, cb.bot, MessageSetting(text='ожидайте', keyboard=get_callback_inline_keyboard(
             InlineButtonSetting(
                 text='ok', callback=PASS_CALLBACK
             ))))

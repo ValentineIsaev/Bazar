@@ -1,15 +1,21 @@
 import asyncio
+from enum import Enum
 
 from aiogram import Bot
 from aiogram.types import Message, FSInputFile, InputMediaPhoto, InputMediaVideo
 from aiogram.fsm.context import FSMContext
 
-from ..message_utils.message_setting_classes import TypesMedia, MessageSetting, MediaSetting, InputMedia
+from .config_obj import MessageSetting, MediaSetting, InputMedia
 
 from bot.utils.cache_utils.operators import CacheMediaObj
 from bot.storage.redis import Storage
 
 from bot.constants.redis_keys import UserSessionKeys, FSMKeys
+
+
+class TypesMedia(Enum):
+    TYPE_PHOTO = 'photo'
+    TYPE_VIDEO = 'video'
 
 
 async def delete_media_message(storage: Storage, bot: Bot):

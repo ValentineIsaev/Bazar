@@ -7,7 +7,7 @@ import asyncio
 
 from alembic import context
 
-from bot.storage.database.models import Base
+from bot.storage.postgres.models import Base
 from bot.configs.configs import db_configs
 
 # this is the Alembic Config object, which provides

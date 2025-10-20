@@ -4,15 +4,12 @@ import math
 
 from bot.configs.constants import ROW_BUTTON_CATALOG_MENU
 
-from bot.services.product.services import CatalogMenuService
+from bot.services.catalog_service import CatalogMenuService
 from bot.services.product.dto import Product
 
-from bot.utils.message_utils.message_utils import create_list_message
 from bot.utils.message_utils.message_setting_classes import MessageSetting
-from bot.utils.message_utils.keyboard_utils import (create_callback_inline_keyboard,
-                                                    add_callback_inline_keyboard,
-                                                    generate_number_buttons,
-                                                    parse_callback, InlineButtonSetting)
+from bot.utils.message_utils.keyboard_utils import (get_callback_inline_keyboard,
+                                                    InlineButtonSetting)
 
 from .templates.messages import *
 from .templates.keyboard import CATALOG_MENU_NEXT, CATALOG_MENU_BACK, PRODUCT_ACTIONS
@@ -58,9 +55,8 @@ class CatalogRenderer:
 
         additional_keyboard = ((CATALOG_MENU_BACK if not catalog_service.is_start_page else ()) +
                                (CATALOG_MENU_NEXT if not catalog_service.is_end_page else ()))
-        keyboard = message.keyboard
-        message.keyboard = create_callback_inline_keyboard(*additional_keyboard, row=2) if keyboard is None \
-            else add_callback_inline_keyboard(keyboard, *additional_keyboard, row=2)
+        message.keyboard = get_callback_inline_keyboard(*additional_keyboard, row=2,
+                                                        keyboard_markup=message.keyboard)
 
         return message
 
@@ -72,8 +68,7 @@ class CategoryCatalogRenderer(CatalogRenderer):
     def _render_main_body(self, catalog_service) -> MessageSetting:
         page_catalogs = catalog_service.get_page_catalogs()
         text = self._generate_list_catalog(page_catalogs) + HEADER_CATALOG_MENU_TEXT
-        keyboard = create_callback_inline_keyboard(*self._generate_buttons(page_catalogs),
-                                                   row=ROW_BUTTON_CATALOG_MENU)
+        keyboard = get_callback_inline_keyboard(*self._generate_buttons(page_catalogs), row=ROW_BUTTON_CATALOG_MENU)
 
         return MessageSetting(text=text, keyboard=keyboard)
 

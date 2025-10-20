@@ -6,7 +6,7 @@ from bot.storage.redis import Storage
 
 from bot.constants.redis_keys import UserSessionKeys
 
-from bot.storage.database import BaseRepository, RefCatalogBase
+from bot.storage.postgres import BaseRepository, RefCatalogBase
 from bot.constants import ServiceConstants
 
 from bot.managers.base import StorageManager
