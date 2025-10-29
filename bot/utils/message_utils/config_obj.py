@@ -5,6 +5,7 @@ import re
 from aiogram.types import inline_keyboard_markup
 
 from bot.utils.cache_utils.cache_obj import CacheMediaObj
+from .const import TypesMedia
 
 
 @dataclass()
@@ -43,7 +44,7 @@ class InputMedia:
     chat_id: int
 
     file_id: str
-    type_media: str
+    type_media: TypesMedia
 
 
 @dataclass
@@ -59,13 +60,12 @@ class MediaSetting:
 @dataclass
 class MessageSetting:
     def __init__(self, text: str=None, keyboard: inline_keyboard_markup=None, parse_mode:str=None,
-                 media: MediaSetting | tuple[MediaSetting]=None,
-                 cache_media: CacheMediaObj | tuple[CacheMediaObj]=None):
+                 media: MediaSetting | tuple[MediaSetting]=None):
         self.text = text
         self.keyboard = keyboard
         self.parse_mode = parse_mode
         self.media = media
-        self.cache_media = cache_media
+        # self.cache_media = cache_media
 
 
 class TextTemplate:

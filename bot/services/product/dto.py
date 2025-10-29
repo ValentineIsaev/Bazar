@@ -1,15 +1,17 @@
 from dataclasses import dataclass
 
-from bot.utils.cache_utils.operators import CacheMediaOperator
-from bot.utils.message_utils.message_setting_classes import MediaSetting
+from bot.storage.local_media_data.dto import LocalObjPath
 
 
 @dataclass()
 class Product:
-    id_seller: int = None
+    table_id: int = None
+    product_id: int = None
+    autor_id: int = None
 
-    name: str | None = None
-    price: str | None = None
-    catalog: str | None = None
-    description: str | None = None
-    media: CacheMediaOperator | None | MediaSetting = None
+    name_product: str = None
+    catalog: str = None
+    price: float = None
+    media_path: tuple[LocalObjPath, ...] = None
+    amount: int = None
+    description: str = None

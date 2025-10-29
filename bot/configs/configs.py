@@ -26,29 +26,42 @@ class DataBaseConfigs(ConfigBase):
             return v.replace('postgresql://', 'postgresql+asyncpg://', 1)
         return v
 
+class MediaStorageData(ConfigBase):
+    TEMP_STORAGE_PATH: Path
+    PERM_STORAGE_PATH: Path
 
-class CacheConfigs(ConfigBase):
-    CACHE_DIR: Path
-    CACHE_MEDIA_DIR: Path
+    @field_validator('TEMP_STORAGE_PATH', 'PERM_STORAGE_PATH')
+    def set_temp_storage_path(cls, path: Path):
+        if not isinstance(path, Path):
+            raise TypeError(f'Type storage path incorrect: type({path}): {type(path)}')
+        if not path.exists():
+            raise LoadConfigError(f'Storage dir "{path}" do not exist!')
 
-    @field_validator('CACHE_DIR')
-    def check_cache_dir(cls, cache_dir: Path):
-        if not cache_dir.exists():
-            raise LoadConfigError('Cache dir is not exits!')
-        return cache_dir
+        return path
 
-    @field_validator('CACHE_MEDIA_DIR')
-    def check_cache_media_dir(cls, media_cache_dir: Path, info):
-        cache_dir = info.data.get('CACHE_DIR')
-
-        if not media_cache_dir.exists():
-            raise LoadConfigError('Cache dir is not exits!')
-        if media_cache_dir.parent != cache_dir:
-            raise LoadConfigError(
-                f'Media cache dir need heir cache dir: {cache_dir}. Your cache dir: {media_cache_dir}')
-        return media_cache_dir
+# class CacheConfigs(ConfigBase):
+#     CACHE_DIR: Path
+#     CACHE_MEDIA_DIR: Path
+#
+#     @field_validator('CACHE_DIR')
+#     def check_cache_dir(cls, cache_dir: Path):
+#         if not cache_dir.exists():
+#             raise LoadConfigError('Cache dir is not exits!')
+#         return cache_dir
+#
+#     @field_validator('CACHE_MEDIA_DIR')
+#     def check_cache_media_dir(cls, media_cache_dir: Path, info):
+#         cache_dir = info.data.get('CACHE_DIR')
+#
+#         if not media_cache_dir.exists():
+#             raise LoadConfigError('Cache dir is not exits!')
+#             return media_cache_dir
+#         if media_cache_dir.parent != cache_dir:
+#             raise LoadConfigError(
+#                 f'Media cache dir need heir cache dir: {cache_dir}. Your cache dir: {media_cache_dir}')
 
 
 bot_configs = BotConfigs()
 db_configs = DataBaseConfigs()
-cache_configs = CacheConfigs()
+media_storage_data = MediaStorageData()
+# cache_configs = CacheConfigs()

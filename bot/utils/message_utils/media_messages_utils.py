@@ -1,5 +1,4 @@
 import asyncio
-from enum import Enum
 
 from aiogram import Bot
 from aiogram.types import Message, FSInputFile, InputMediaPhoto, InputMediaVideo
@@ -7,15 +6,12 @@ from aiogram.fsm.context import FSMContext
 
 from .config_obj import MessageSetting, MediaSetting, InputMedia
 
-from bot.utils.cache_utils.operators import CacheMediaObj
+# from bot.utils.cache_utils.operators import CacheMediaObj
+from bot.types.storage import TelegramMediaSaveData
 from bot.storage.redis import Storage
 
 from bot.constants.redis_keys import UserSessionKeys, FSMKeys
-
-
-class TypesMedia(Enum):
-    TYPE_PHOTO = 'photo'
-    TYPE_VIDEO = 'video'
+from .const import TypesMedia
 
 
 async def delete_media_message(storage: Storage, bot: Bot):
@@ -31,25 +27,25 @@ async def delete_media_message(storage: Storage, bot: Bot):
         await storage.update_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, None)
 
 
-def parse_media_data(msg: Message) -> InputMedia:
-    type_media = ''
-    file_id = ''
+def parse_media_data(msg: Message) -> TelegramMediaSaveData:
     if msg.photo is not None:
         type_media = TypesMedia.TYPE_PHOTO
         file_id = msg.photo[-1].file_id
     elif msg.video is not None:
         type_media = TypesMedia.TYPE_VIDEO
         file_id = msg.video.file_id
+    else:
+        raise ValueError('Message have not media!')
 
-    return InputMedia(msg.message_id, msg.chat.id, file_id, type_media)
+    return TelegramMediaSaveData(file_id, type_media)
 
 
 lock = asyncio.Lock()
 async def input_media_album(bot: Bot, state: FSMContext, msg: Message,  answer_message: MessageSetting,
-                            stop_text: str, max_len: int = 3) -> list | list[InputMedia]:
+                            stop_text: str, max_len: int = 3) -> list | list[TelegramMediaSaveData]:
     async with lock:
         result = []
-        media_list_id: list[InputMedia] | None = await state.get_value(FSMKeys.InputMediaAlbum.INPUTS_MEDIA_MESSAGES_ID)
+        media_list_id: list[dict[str, TelegramMediaSaveData | int]] | None = await state.get_value(FSMKeys.InputMediaAlbum.INPUTS_MEDIA_MESSAGES_ID)
         bots_messages_id: list[int] | None = await state.get_value(FSMKeys.InputMediaAlbum.SENT_BOTS_MESSAGES_ID)
         if media_list_id is None:
             media_list_id = []
@@ -70,7 +66,10 @@ async def input_media_album(bot: Bot, state: FSMContext, msg: Message,  answer_m
                 for bot_message_id in bots_messages_id:
                     await bot.delete_message(msg.chat.id, bot_message_id)
 
-                result = media_list_id
+                for data in media_list_id:
+                    await bot.delete_message(msg.chat.id, data.get('msg_id'))
+
+                result = [data.get('data') for data in media_list_id]
 
                 bots_messages_id = None
                 media_list_id = None
@@ -80,7 +79,8 @@ async def input_media_album(bot: Bot, state: FSMContext, msg: Message,  answer_m
             else:
                 await msg.delete()
         else:
-            media_list_id.append(parse_media_data(msg))
+            media_list_id.append({'data': parse_media_data(msg),
+                                  'msg_id': msg.message_id})
 
             sent_message = await msg.answer(answer_message.text,
                                             parse_mode=answer_message.parse_mode,
@@ -93,20 +93,6 @@ async def input_media_album(bot: Bot, state: FSMContext, msg: Message,  answer_m
                                    bots_messages_id})
 
         return result
-
-
-async def send_cached_media_message(storage: Storage, bot: Bot, data: MessageSetting) -> None:
-    if isinstance(data.cache_media, tuple):
-        media_path = tuple(MediaSetting(path=media.path, type_media=media.type_media)
-                           for media in data.cache_media)
-    elif isinstance(data.cache_media, CacheMediaObj):
-        media_path = MediaSetting(path=data.cache_media.path,
-                                  type_media=data.cache_media.type_media)
-    else:
-        raise ValueError(f'Wrong type cache media: {type(data.cache_media)}')
-    data.media = media_path
-
-    await send_media_message(storage, bot, data)
 
 
 async def send_media_message(storage: Storage, bot: Bot, data: MessageSetting) -> None:

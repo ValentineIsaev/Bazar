@@ -3,6 +3,7 @@
 .idea
 bot/cache/*/*
 bot/uploads/*
+storage/*
 
 __pycache__/
 *.py[cod]

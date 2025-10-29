@@ -3,7 +3,7 @@ import math
 from aiogram import Bot
 
 from .config_obj import MessageSetting
-from .media_messages_utils import send_media_message, send_cached_media_message
+from .media_messages_utils import send_media_message
 
 from bot.constants.redis_keys import UserSessionKeys
 from bot.storage.redis import FSMStorage
@@ -18,8 +18,6 @@ async def send_message(fsm_storage: FSMStorage, bot: Bot, data: MessageSetting, 
     is_send_new = True if data.media is not None or data.cache_media is not None else is_send_new
     if data.media is not None:
         await send_media_message(fsm_storage, bot, MessageSetting(media=data.media))
-    if data.cache_media is not None:
-        await send_cached_media_message(fsm_storage, bot, MessageSetting(cache_media=data.cache_media))
 
     await send_text_message(fsm_storage, bot, data, is_send_new)
 

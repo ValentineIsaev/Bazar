@@ -29,7 +29,7 @@ async def user_start_handler(bot: Bot, fsm_storage: FSMStorage, state: FSMContex
 async def set_category_catalog_manager(catalog_manager: CatalogManager,
                                        product_category_catalog_manager: ProductCategoryCatalogManager,
                                        callback_prefix: CallbackSetting):
-    category_catalog = await product_category_catalog_manager.get_product_catalogs()
+    category_catalog = await product_category_catalog_manager.get_category_products()
 
     await catalog_manager.set_catalog_service(category_catalog)
     await catalog_manager.set_renderer(CategoryCatalogRenderer(callback_prefix))

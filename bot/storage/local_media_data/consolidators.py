@@ -1,63 +1,74 @@
-from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Any
 
-from .dto import LocalObj, SavedObjData, Obj, ObjPath, LocalSavedObjData, LocalObjPath, MediaLocalObj, MediaLocalSavedObjData
+from aiogram import Bot
 
+from .dto import LocalObjPath, TelegramMediaSaveData, MediaLocalObj
+from .base_consolidator import DataConsolidator
 
-class DataConsolidator(ABC):
-    @abstractmethod
-    def _download_obj(self, obj_data: SavedObjData) -> Any:
-        pass
-
-    @abstractmethod
-    def save_obj(self, obj_data: SavedObjData) -> Obj:
-        pass
-
-    @abstractmethod
-    def get_obj(self, path: ObjPath) -> Obj:
-        pass
-
-    @abstractmethod
-    def add_obj(self, *obj: SavedObjData | Obj) -> None:
-        pass
-
-    @abstractmethod
-    def delete_obj(self, obj: ObjPath) -> None:
-        pass
+from .const import EXT, StorageType, TYPE_DATA_FROM_EXT
 
 
-class LocalConsolidator(DataConsolidator):
-    @abstractmethod
-    def _download_obj(self, obj_data: LocalSavedObjData) -> Any:
-        pass
+class TelegramMediaLocalConsolidator(DataConsolidator):
+    def __init__(self, bot: Bot, temp_path: Path, storage_path: Path):
+        self._bot = bot
 
-    def save_obj(self, obj_data: LocalSavedObjData) -> LocalObj:
-        # Здесь будет реализация
+        self._temp_path = temp_path
+        self._storage_path = storage_path
 
-        pass
+    def __get_obj(self, path: tuple[LocalObjPath, ... ], saved_data: tuple[TelegramMediaSaveData, ...]) -> tuple[MediaLocalObj, ...]:
+        return tuple(MediaLocalObj(path, data.type_media) for path, data in zip(path, saved_data))
 
-    def add_obj(self, *obj: LocalSavedObjData | LocalObj) -> None:
-        # Здесь будет реализация
+    async def _download_obj(self, *objs_data: TelegramMediaSaveData,
+                            storage_type: StorageType) -> tuple[LocalObjPath, ...]:
+        objs_path = []
+        save_path = self._storage_path if storage_type == StorageType.PERMANENT else self._temp_path
+        for obj in objs_data:
+            destination: Path = save_path / f'{obj.file_id}{EXT[obj.type_media]}'
+            objs_path.append(LocalObjPath(destination))
+            file = await self._bot.get_file(obj.file_id)
+            await self._bot.download(file.file_path, destination)
 
-        pass
+        return tuple(objs_path)
 
-    def get_obj(self, path: LocalObjPath) -> LocalObj:
-        # Здесь будет реализация
+    async def save_temp_obj(self, *objs_data: TelegramMediaSaveData) -> tuple[MediaLocalObj, ...]:
+        objs_path = await self._download_obj(*objs_data, storage_type=StorageType.TEMPORARY)
+        return self.__get_obj(objs_path, objs_data)
 
-        pass
+    async def save_perm_obj(self, objs: tuple[TelegramMediaSaveData, ...] | tuple[MediaLocalObj, ...]) -> tuple[MediaLocalObj, ...]:
+        if len(objs) > 0:
+            if all(map(lambda x: isinstance(x, type(objs[0])), objs)):
+                if isinstance(objs[0], TelegramMediaSaveData):
+                    path = await self._download_obj(*objs, storage_type=StorageType.PERMANENT)
+                    return self.__get_obj(path, objs)
+                elif isinstance(objs[0], MediaLocalObj):
+                    path = []
+                    for obj in objs:
+                        obj_path = obj.path.path
+                        if obj_path.exists() and obj_path.is_file():
+                            new_path = self._storage_path / obj_path.name
+                            obj_path.replace(new_path)
+                            path.append(LocalObjPath(new_path))
 
-    def delete_obj(self, obj: LocalObjPath) -> None:
-        # Здесь будет реализация
+                    return self.__get_obj(tuple(path), objs)
 
-        pass
+        raise ValueError('Incorrect data!')
 
-class MediaLocalConsolidator(LocalConsolidator):
-    @abstractmethod
-    def _download_media(self, media_data: LocalSavedObjData) -> Path:
-        pass
+    def get_obj(self, *path: LocalObjPath) -> None:
+        return None
 
-    def _download_obj(self, obj_data: LocalSavedObjData) -> Path:
-        # Здесь будет реализация
+    def get_obj_data(self, *path: LocalObjPath) -> tuple[MediaLocalObj, ...]:
+        objs = []
+        for path in path:
+            obj_path = path.path
+            obj = None
+            if obj_path.exists() and obj_path.is_file():
+                obj = MediaLocalObj(path, TYPE_DATA_FROM_EXT[obj_path.suffix])
+            objs.append(obj)
 
-        pass
+        return tuple(objs)
+
+    def delete_obj(self, *objs_path: LocalObjPath) -> None:
+        for path in objs_path:
+            obj_path = path.path
+            if obj_path.exists() and obj_path.is_file():
+                obj_path.unlink()

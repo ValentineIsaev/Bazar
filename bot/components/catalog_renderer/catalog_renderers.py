@@ -5,7 +5,6 @@ import math
 from bot.configs.constants import ROW_BUTTON_CATALOG_MENU
 
 from bot.services.catalog_service import CatalogMenuService
-from bot.services.product.dto import Product
 
 from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.keyboard_utils import (get_callback_inline_keyboard,

@@ -1,16 +1,15 @@
 from aiogram import Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
-
+from aiogram.fsm.context import FSMContext
 
 from aiogram import F
 from aiogram.filters import StateFilter, or_f, and_f
 
-from ..helpers import *
 from bot.handlers.seller.templates.messages import *
 from bot.handlers.seller.templates.fsm_states import *
 from bot.handlers.seller.templates.configs import BASE_STATE
-
+from ..helpers import *
 from bot.handlers.utils import set_category_catalog_manager
 from bot.constants.callback import PASS_CALLBACK
 from bot.constants.redis_keys import UserSessionKeys, FSMKeys
@@ -20,12 +19,13 @@ from bot.utils.exception import UnknownCallback
 from bot.utils.message_utils.keyboard_utils import *
 from bot.utils.filters import CallbackFilter, TypeUserFilter
 from bot.utils.message_utils.media_messages_utils import input_media_album
-from bot.utils.cache_utils.cache_utils import caching_media
 
 from bot.storage.redis import FSMStorage
 from bot.managers.product_managers import InputProductManager, ProductCategoryCatalogManager
 from bot.managers.catalog_manager import CatalogManager
 from bot.utils.message_utils.message_setting_classes import CallbackSetting
+
+from bot.types.storage import TelegramMediaLocalConsolidator
 
 
 router = Router()
@@ -121,13 +121,14 @@ async def add_description(msg: Message, state: FSMContext, fsm_storage: FSMStora
                      F.video,
                      Command('skip'),
                      StateFilter(AddProductStates.add_photo, EditProductStates.EditParam.edit_photo)))
-async def add_photo(msg: Message, state: FSMContext, fsm_storage: FSMStorage, input_product_manager: InputProductManager):
+async def add_photo(msg: Message, state: FSMContext, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
+                    media_consolidator: TelegramMediaLocalConsolidator):
     album = await input_media_album(msg.bot, state, msg, PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, PHOTO_INPUT_STOP_TEXT)
     is_skip = msg.text == SKIP_INPUT_PHOTO_COMMAND
     if album or is_skip:
         user_data = None
         if not is_skip:
-            user_data = await caching_media(album, msg.bot)
+            user_data = await media_consolidator.save_temp_obj(*album)
         await handler_input_product_field(msg, fsm_storage, input_product_manager, state, 'media', user_data, False)
 
 

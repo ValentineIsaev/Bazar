@@ -17,7 +17,7 @@ class ProductCategoryCatalogManager:
     def __init__(self, db_session: AsyncSession):
         self._catalog_repo = BaseRepository(db_session, RefCatalogBase)
 
-    async def get_product_catalogs(self) -> CatalogMenuService:
+    async def get_category_products(self) -> CatalogMenuService:
         catalogs_model = await self._catalog_repo.get_all()
         return CatalogMenuService(tuple((int(model.id), model.catalog) for model in catalogs_model),
                                   ServiceConstants.CATALOG_MENU_CAPACITY)

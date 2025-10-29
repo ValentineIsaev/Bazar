@@ -7,7 +7,7 @@ from bot.constants.redis_keys import FSMKeys
 from bot.managers.base import StorageManager
 
 from bot.utils.decorators import require_field
-from bot.utils.message_utils.message_setting_classes import MessageSetting
+from bot.types.utils import MessageSetting
 
 from typing import Any
 
