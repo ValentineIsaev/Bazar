@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from bot.constants.redis_keys import FSMKeys
-from bot.utils.message_utils.keyboard_utils import parse_callback
+from bot.types.utils import CallbackSetting
 
 
 class TypeUserFilter(BaseFilter):
@@ -23,7 +23,7 @@ class CallbackFilter(BaseFilter):
 
 
     async def __call__(self, cb: CallbackQuery):
-        scope, subscope, action = parse_callback(cb.data)
+        scope, subscope, action = CallbackSetting.decode_callback(cb.data)
         return ((self._scope is None or scope == self._scope) and
                 (self._subscope is None or subscope == self._subscope) and
                 (self._action is None or action == self._action))

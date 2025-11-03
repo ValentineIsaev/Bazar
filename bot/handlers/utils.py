@@ -1,4 +1,5 @@
-from .handlers_import import *
+from aiogram import Bot
+from aiogram.fsm.context import FSMContext
 
 from bot.storage.redis.storage import FSMStorage
 from aiogram.fsm.state import State
@@ -11,7 +12,7 @@ from bot.managers.product_managers import ProductCategoryCatalogManager
 from bot.managers.catalog_manager import CatalogManager
 
 from bot.components.catalog_renderer import CategoryCatalogRenderer
-from bot.utils.message_utils.message_setting_classes import CallbackSetting
+from bot.types.utils import CallbackSetting
 
 
 async def user_start_handler(bot: Bot, fsm_storage: FSMStorage, state: FSMContext, base_state: State, user_type: str,

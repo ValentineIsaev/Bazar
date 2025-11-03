@@ -17,10 +17,10 @@ class FieldConfig:
 
 
 ADD_FIELD_PRODUCT_CONFIGS = {
-    'name': FieldConfig(INPUT_PRODUCT_NAME_MESSAGE, 'description', AddProductStates.add_description),
-    'catalog': FieldConfig(next_field='name', next_state=AddProductStates.add_name),
+    'name_product': FieldConfig(INPUT_PRODUCT_NAME_MESSAGE, 'description', AddProductStates.add_description),
+    'catalog': FieldConfig(next_field='name_product', next_state=AddProductStates.add_name),
     'price': FieldConfig(INPUT_PRICE_PRODUCT_MESSAGE, None,
                          EditProductStates.complete_edit, is_end_field=True),
-    'description': FieldConfig(INPUT_DESCRIPTION_MESSAGE, 'media', AddProductStates.add_photo),
-    'media': FieldConfig(INPUT_PHOTO_PRODUCT_MESSAGE, 'price', AddProductStates.add_price)
+    'description': FieldConfig(INPUT_DESCRIPTION_MESSAGE, 'media_path', AddProductStates.add_photo),
+    'media_path': FieldConfig(INPUT_PHOTO_PRODUCT_MESSAGE, 'price', AddProductStates.add_price)
 }

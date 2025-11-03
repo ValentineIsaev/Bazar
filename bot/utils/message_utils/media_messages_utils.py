@@ -11,7 +11,7 @@ from bot.types.storage import TelegramMediaSaveData
 from bot.storage.redis import Storage
 
 from bot.constants.redis_keys import UserSessionKeys, FSMKeys
-from .const import TypesMedia
+from bot.constants.utils_const import TypesMedia
 
 
 async def delete_media_message(storage: Storage, bot: Bot):
@@ -28,6 +28,20 @@ async def delete_media_message(storage: Storage, bot: Bot):
 
 
 def parse_media_data(msg: Message) -> TelegramMediaSaveData:
+    if msg.photo is not None:
+        type_media = TypesMedia.TYPE_PHOTO
+        file_id = msg.photo[-1].file_id
+    elif msg.video is not None:
+        type_media = TypesMedia.TYPE_VIDEO
+        file_id = msg.video.file_id
+    else:
+        raise ValueError('Message have not media!')
+
+    print(file_id)
+    return TelegramMediaSaveData(file_id, type_media)
+
+
+def get_saved_media_data(msg: Message) -> TelegramMediaSaveData:
     if msg.photo is not None:
         type_media = TypesMedia.TYPE_PHOTO
         file_id = msg.photo[-1].file_id
@@ -66,16 +80,19 @@ async def input_media_album(bot: Bot, state: FSMContext, msg: Message,  answer_m
                 for bot_message_id in bots_messages_id:
                     await bot.delete_message(msg.chat.id, bot_message_id)
 
-                for data in media_list_id:
-                    await bot.delete_message(msg.chat.id, data.get('msg_id'))
 
                 result = [data.get('data') for data in media_list_id]
+                for data in media_list_id:
+                    await bot.delete_message(msg.chat.id, data.get('msg_id'))
 
                 bots_messages_id = None
                 media_list_id = None
 
                 if is_full and msg.text is None:
                     result.append(parse_media_data(msg))
+                    await msg.delete()
+
+                print(tuple(map(lambda x: x.file_id, result)))
             else:
                 await msg.delete()
         else:

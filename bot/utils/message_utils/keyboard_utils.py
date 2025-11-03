@@ -35,7 +35,7 @@ def get_callback_inline_keyboard(*data: InlineButtonSetting, row=1,
         keyboard.row(
             *[InlineKeyboardButton(text=button.text, callback_data=button.callback) for button in layer])
 
-    return keyboard.as_markup
+    return keyboard.as_markup()
 
 
 # def add_callback_inline_keyboard(markup: inline_keyboard_markup,

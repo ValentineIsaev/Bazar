@@ -2,18 +2,21 @@ from pathlib import Path
 import shutil
 
 from bot.dependencies import (DIMiddleware, set_product_manager, set_input_product_manager, set_catalog_manager,
-                              set_product_category_catalog_manager, set_media_consolidator)
+                              set_product_category_catalog_manager, SetterMediaConsolidator)
 
 from bot.storage.postgres import SessionLocal
 from bot.storage.redis.core import user_session_redis
 
-from bot.configs.configs import bot_configs
+from bot.configs.configs import bot_configs, media_storage_data
 
 from aiogram import Bot, Dispatcher
 
-async def set_dependencies(dp: Dispatcher):
+async def set_dependencies(dp: Dispatcher, bot: Bot):
     async with SessionLocal() as session:
         dp['db_session'] = session
+
+    set_media_consolidator = SetterMediaConsolidator(bot, media_storage_data.TEMP_STORAGE_PATH,
+                                                     media_storage_data.PERM_STORAGE_PATH)
 
     di_middleware = DIMiddleware(product_manager=set_product_manager,
                                  input_product_manager=set_input_product_manager,

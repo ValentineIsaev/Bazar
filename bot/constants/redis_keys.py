@@ -9,6 +9,12 @@ class UserSessionKeys:
 
 
 class FSMKeys:
+    USER_ASYNC_LOCK = 'async_lock'
+
+    TEMP_BOT_MSG = 'temp_bot_message'
+    USERS_MEDIA_MSGS = 'user_media_msgs'
+    SAVED_MEDIA_DATA = 'saved_media_data'
+
     class CatalogData:
         CATALOG_RENDERER = 'catalog_renderer'
         CATALOG_SERVICE = 'catalog_service'

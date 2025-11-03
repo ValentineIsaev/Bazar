@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from abc import ABC
 
-from bot.utils.message_utils import TypesMedia
+from bot.constants.utils_const import TypesMedia
 
 from .path import LocalObjPath, ObjPath
 

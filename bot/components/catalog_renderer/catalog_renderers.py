@@ -6,14 +6,12 @@ from bot.configs.constants import ROW_BUTTON_CATALOG_MENU
 
 from bot.services.catalog_service import CatalogMenuService
 
-from bot.utils.message_utils.message_setting_classes import MessageSetting
+from bot.types.utils import MessageSetting, CallbackSetting
 from bot.utils.message_utils.keyboard_utils import (get_callback_inline_keyboard,
                                                     InlineButtonSetting)
 
 from .templates.messages import *
 from .templates.keyboard import CATALOG_MENU_NEXT, CATALOG_MENU_BACK, PRODUCT_ACTIONS
-
-from bot.utils.message_utils.message_setting_classes import CallbackSetting
 
 
 class CatalogRenderer:
@@ -43,7 +41,7 @@ class CatalogRenderer:
 
 
     def get_id_by_callback(self, callback: str) -> int:
-        return int(callback.replace(f'{self._prefix}-', ''))
+        return int(callback.replace(f'{self._prefix.callback}-', ''))
 
     def render_message(self, catalog_service: CatalogMenuService) -> MessageSetting:
         message = self._render_main_body(catalog_service)

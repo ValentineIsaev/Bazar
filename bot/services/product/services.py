@@ -1,15 +1,18 @@
-from pathlib import Path
+from bot.types.utils import InputMedia
 from dataclasses import dataclass
 
-from bot.utils.cache_utils.operators import CacheMediaOperator
-
 from .dto import Product
+from enum import Enum
+
+
+class ValidateErrors(Enum):
+    INVALID_PRICE = 'INVALID PRICE'
 
 
 @dataclass
 class ValidationResult:
     is_validate: bool
-    error: str | None = None
+    error: ValidateErrors | None = None
 
 
 class InputProductService:
@@ -31,9 +34,9 @@ class InputProductService:
             float(price)
             return ValidationResult(is_validate=True)
         except ValueError:
-            return ValidationResult(is_validate=False, error=INVALID_PRICE_MESSAGE)
+            return ValidationResult(is_validate=False, error=ValidateErrors.INVALID_PRICE)
 
-    def _validate_media(self, media: CacheMediaOperator) -> ValidationResult:
+    def _validate_media(self, media: InputMedia) -> ValidationResult:
         return ValidationResult(is_validate=True)
 
     def add_value(self, field_name: str, value) -> None | str:

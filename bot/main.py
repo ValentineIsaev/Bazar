@@ -16,7 +16,7 @@ async def main():
     bot = await setup()
     dp = Dispatcher(storage=MemoryStorage())
 
-    await set_dependencies(dp)
+    await set_dependencies(dp, bot)
 
     dp.include_routers(common_router, seller_router, buyer_router, catalog_menu_router)
     print('Start bot!')

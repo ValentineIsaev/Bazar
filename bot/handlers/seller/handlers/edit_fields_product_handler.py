@@ -9,7 +9,7 @@ from bot.utils.message_utils.message_utils import MessageSetting, send_message
 from bot.handlers.seller.templates.configs import FieldConfig, ADD_FIELD_PRODUCT_CONFIGS
 from bot.utils.filters import CallbackFilter, TypeUserFilter
 from bot.configs.constants import UserTypes
-from bot.utils.message_utils.keyboard_utils import parse_callback
+from bot.types.utils import CallbackSetting
 
 from bot.storage.redis import FSMStorage
 
@@ -19,7 +19,7 @@ router = Router()
 @router.callback_query(CallbackFilter('product','edit_product'),
                               TypeUserFilter(UserTypes.SELLER))
 async def edit_product_handler(cb: CallbackQuery, state: FSMContext, fsm_storage: FSMStorage):
-    _, _, action = parse_callback(cb.data)
+    _, _, action = CallbackSetting.decode_callback(cb.data)
     new_message: MessageSetting
     is_send_new = True
     if action == 'start':

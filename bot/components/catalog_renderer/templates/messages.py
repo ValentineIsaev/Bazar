@@ -1,4 +1,4 @@
-from bot.utils.message_utils.message_setting_classes import TextTemplate
+from bot.types.utils import TextTemplate
 
 HEADER_CATALOG_TEXT = 'Используйте кнопки "Вперед" и "Назад" для управления списком.\n\n'
 

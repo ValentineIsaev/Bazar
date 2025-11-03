@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from typing import Any
 
 from .dto import Obj, ObjPath, SaveDataObj
-from const import StorageType
+from .const import StorageType
 
 class DataConsolidator(ABC):
     @abstractmethod

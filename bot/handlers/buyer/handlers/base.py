@@ -11,6 +11,8 @@ from bot.constants.redis_keys import UserSessionKeys
 from bot.storage.redis import FSMStorage
 from bot.configs.constants import UserTypes
 from bot.handlers.utils import user_start_handler
+from bot.types.utils import MessageSetting
+
 
 router = Router()
 

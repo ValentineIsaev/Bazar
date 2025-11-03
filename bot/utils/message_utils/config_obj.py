@@ -4,8 +4,7 @@ import re
 
 from aiogram.types import inline_keyboard_markup
 
-from bot.utils.cache_utils.cache_obj import CacheMediaObj
-from .const import TypesMedia
+from bot.constants.utils_const import TypesMedia
 
 
 @dataclass()
@@ -23,15 +22,18 @@ class CallbackSetting:
     subscope: str | None = None
     action: str | None = None
 
+    def __str__(self):
+        return self.callback
+
     @property
     def callback(self):
-        return f'{self.scope}:{self.subscope}:{self.action}'
+        return f'{self.scope}/{self.subscope}/{self.action}'
 
     @staticmethod
     def decode_callback(callback: str) -> tuple[str, str, str]:
         if re.search(CallbackSetting._CALLBACK_STRUCTURE, callback):
             return callback.split('/')
-        raise ValueError('This is not a callback')
+        raise ValueError(f'This is not a callback: {callback}')
 
     @staticmethod
     def encode_callback(scope: str, subscope: str, action: str) -> str:

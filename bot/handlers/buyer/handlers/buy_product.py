@@ -1,7 +1,6 @@
 from aiogram.filters import and_f
 
 from bot.handlers.buyer.templates.fsm_states import BuyerStates
-from bot.handlers.buyer.templates.keyboard import *
 from bot.storage.redis import FSMStorage
 from aiogram import Router
 # from bot.components.catalog_renderer import ProductCatalogManager
@@ -10,15 +9,12 @@ from bot.managers.product_managers import ProductManager, ProductCategoryCatalog
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from bot.utils.message_utils.keyboard_utils import parse_callback, create_callback
 from bot.configs.constants import UserTypes
-from bot.constants.redis_keys import FSMKeys
 from bot.utils.filters import CallbackFilter, TypeUserFilter
-from bot.utils.message_utils.message_setting_classes import MessageSetting
 from bot.utils.message_utils.message_utils import send_message
 
 from bot.managers.catalog_manager import CatalogManager
-from bot.utils.message_utils.message_setting_classes import CallbackSetting
+from bot.types.utils import CallbackSetting, MessageSetting
 
 
 buyer_router = Router()
@@ -30,7 +26,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_mana
                               fsm_storage: FSMStorage,
                               catalog_manager: CatalogManager,
                               product_category_catalog_manager: ProductCategoryCatalogManager):
-    scope, subscope, action = parse_callback(cb.data)
+    scope, subscope, action = CallbackSetting.decode_callback(cb.data)
     new_message: MessageSetting | None = None
     if subscope == 'choice_product':
         if action == 'start':
@@ -46,7 +42,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_mana
         #     catalog_manager = ProductCatalogManager(products)
         #     new_message = catalog_manager
         #     new_message = catalog_manager.create_message()
-            await fsm_storage.update_value(FSMKeys.CATALOG_MANAGER, catalog_manager)
+        #     await fsm_storage.update_value(FSMKeys.CATALOG_MANAGER, catalog_manager)
     elif subscope == 'buy_product':
         if action == 'choice_product':
             pass

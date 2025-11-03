@@ -15,7 +15,7 @@ async def delete_bot_message(fsm_storage: FSMStorage, bot: Bot) -> None:
 
 
 async def send_message(fsm_storage: FSMStorage, bot: Bot, data: MessageSetting, is_send_new=True):
-    is_send_new = True if data.media is not None or data.cache_media is not None else is_send_new
+    is_send_new = True if data.media else is_send_new
     if data.media is not None:
         await send_media_message(fsm_storage, bot, MessageSetting(media=data.media))
 

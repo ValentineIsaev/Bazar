@@ -1,6 +1,8 @@
+import asyncio
 from pathlib import Path
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 
 from .dto import LocalObjPath, TelegramMediaSaveData, MediaLocalObj
 from .base_consolidator import DataConsolidator
@@ -26,9 +28,10 @@ class TelegramMediaLocalConsolidator(DataConsolidator):
             destination: Path = save_path / f'{obj.file_id}{EXT[obj.type_media]}'
             objs_path.append(LocalObjPath(destination))
             file = await self._bot.get_file(obj.file_id)
-            await self._bot.download(file.file_path, destination)
+            await self._bot.download(file, destination)
 
         return tuple(objs_path)
+
 
     async def save_temp_obj(self, *objs_data: TelegramMediaSaveData) -> tuple[MediaLocalObj, ...]:
         objs_path = await self._download_obj(*objs_data, storage_type=StorageType.TEMPORARY)
