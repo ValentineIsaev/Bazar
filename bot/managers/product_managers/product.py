@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.services.product import InputProductService, Product
+from bot.services.product import InputProductService, Product, ProductInputField, ValidateErrors
 from bot.services.catalog_service import CatalogMenuService
 from bot.storage.redis import Storage
 
@@ -24,6 +24,9 @@ class ProductCategoryCatalogManager:
 
 
 class InputProductManager(ProductCategoryCatalogManager, StorageManager):
+    PRODUCT_INPUT_FIELD = ProductInputField
+    VALIDATE_ERRORS = ValidateErrors
+
     def __init__(self, session_storage: Storage, db_session: AsyncSession):
         ProductCategoryCatalogManager.__init__(self, db_session)
         StorageManager.__init__(self, session_storage)
@@ -38,7 +41,7 @@ class InputProductManager(ProductCategoryCatalogManager, StorageManager):
         await self._storage.update_data(**{UserSessionKeys.INPUT_PRODUCT_SERVICE: self._product})
 
     @require_field('_product', UserSessionKeys.INPUT_PRODUCT_SERVICE)
-    async def add_value(self, field_name: str, value) -> str | None:
+    async def add_value(self, field_name: PRODUCT_INPUT_FIELD, value) -> ValidateErrors | None:
         result = self._product.add_value(field_name, value)
         if result is not None:
             await self._storage.update_data(**{UserSessionKeys.INPUT_PRODUCT_SERVICE: self._product})

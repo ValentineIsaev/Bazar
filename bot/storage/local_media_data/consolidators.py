@@ -2,7 +2,6 @@ import asyncio
 from pathlib import Path
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest
 
 from .dto import LocalObjPath, TelegramMediaSaveData, MediaLocalObj
 from .base_consolidator import DataConsolidator
@@ -17,9 +16,6 @@ class TelegramMediaLocalConsolidator(DataConsolidator):
         self._temp_path = temp_path
         self._storage_path = storage_path
 
-    def __get_obj(self, path: tuple[LocalObjPath, ... ], saved_data: tuple[TelegramMediaSaveData, ...]) -> tuple[MediaLocalObj, ...]:
-        return tuple(MediaLocalObj(path, data.type_media) for path, data in zip(path, saved_data))
-
     async def _download_obj(self, *objs_data: TelegramMediaSaveData,
                             storage_type: StorageType) -> tuple[LocalObjPath, ...]:
         objs_path = []
@@ -33,16 +29,16 @@ class TelegramMediaLocalConsolidator(DataConsolidator):
         return tuple(objs_path)
 
 
-    async def save_temp_obj(self, *objs_data: TelegramMediaSaveData) -> tuple[MediaLocalObj, ...]:
+    async def save_temp_obj(self, *objs_data: TelegramMediaSaveData) -> tuple[LocalObjPath, ...]:
         objs_path = await self._download_obj(*objs_data, storage_type=StorageType.TEMPORARY)
-        return self.__get_obj(objs_path, objs_data)
+        return objs_path
 
-    async def save_perm_obj(self, objs: tuple[TelegramMediaSaveData, ...] | tuple[MediaLocalObj, ...]) -> tuple[MediaLocalObj, ...]:
+    async def save_perm_obj(self, objs: tuple[TelegramMediaSaveData, ...] | tuple[MediaLocalObj, ...]) -> tuple[LocalObjPath, ...]:
         if len(objs) > 0:
             if all(map(lambda x: isinstance(x, type(objs[0])), objs)):
                 if isinstance(objs[0], TelegramMediaSaveData):
                     path = await self._download_obj(*objs, storage_type=StorageType.PERMANENT)
-                    return self.__get_obj(path, objs)
+                    return path
                 elif isinstance(objs[0], MediaLocalObj):
                     path = []
                     for obj in objs:
@@ -52,7 +48,7 @@ class TelegramMediaLocalConsolidator(DataConsolidator):
                             obj_path.replace(new_path)
                             path.append(LocalObjPath(new_path))
 
-                    return self.__get_obj(tuple(path), objs)
+                    return tuple(path)
 
         raise ValueError('Incorrect data!')
 

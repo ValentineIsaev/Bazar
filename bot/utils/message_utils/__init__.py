@@ -1,3 +1,3 @@
 from .message_utils import send_message, send_text_message, delete_bot_message
-from .media_messages_utils import delete_media_message, input_media_album, send_media_message, get_saved_media_data
+from .media_messages_utils import delete_media_message, send_media_message, get_saved_media_data
 from .keyboard_utils import get_callback_inline_keyboard, get_reply_keyboard

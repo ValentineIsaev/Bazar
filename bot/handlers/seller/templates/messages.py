@@ -21,4 +21,4 @@ PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE = MessageSetting(text='Это все?', keyb
 
 COMPLETE_ADD_PRODUCT_MESSAGE_WITH_MEDIA = MessageSetting(text='Все верно указано?',
                                                          keyboard=ADD_PRODUCT_COMPLETE_KEYBOARD)
-COMPLETE_ADD_PRODUCT_MESSAGE = TextTemplate('?\n\nВсе верно указано')
+COMPLETE_ADD_PRODUCT_MESSAGE = '\n\nВсе верно указано'

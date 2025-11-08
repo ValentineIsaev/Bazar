@@ -1,7 +1,7 @@
 from bot.types.utils import InputMedia
 from dataclasses import dataclass
 
-from .dto import Product
+from .dto import Product, ProductInputField
 from enum import Enum
 
 
@@ -39,7 +39,7 @@ class InputProductService:
     def _validate_media(self, media: InputMedia) -> ValidationResult:
         return ValidationResult(is_validate=True)
 
-    def add_value(self, field_name: str, value) -> None | str:
+    def add_value(self, field_name: ProductInputField, value) -> None | str:
         """
         Function for update and validate data in product form
         :param field_name: name property of product form class

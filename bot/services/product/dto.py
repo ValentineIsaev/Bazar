@@ -1,6 +1,16 @@
 from dataclasses import dataclass
 
 from bot.storage.local_media_data.dto import LocalObjPath
+from enum import Enum
+
+
+class ProductInputField(Enum):
+    NAME_PRODUCT = 'name_product'
+    CATALOG = 'catalog'
+    PRICE = 'price'
+    MEDIA_PATH = 'media_path'
+    AMOUNT = 'amount'
+    DESCRIPTION = 'description'
 
 
 @dataclass()

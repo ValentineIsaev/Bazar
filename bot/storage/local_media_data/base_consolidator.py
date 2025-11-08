@@ -10,7 +10,7 @@ class DataConsolidator(ABC):
         pass
 
     @abstractmethod
-    def save_temp_obj(self, *objs_data: SaveDataObj) -> tuple[Obj, ...]:
+    def save_temp_obj(self, *objs_data: SaveDataObj) -> tuple[ObjPath, ...]:
         pass
 
     @abstractmethod
@@ -22,7 +22,7 @@ class DataConsolidator(ABC):
         pass
 
     @abstractmethod
-    def save_perm_obj(self, objs: SaveDataObj | Obj) -> tuple[Obj, ...]:
+    def save_perm_obj(self, objs: SaveDataObj | Obj) -> tuple[ObjPath, ...]:
         pass
 
     @abstractmethod
