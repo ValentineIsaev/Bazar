@@ -1,5 +1,6 @@
-from bot.handlers.seller.templates.keyboards import ADD_PRODUCT_COMPLETE_KEYBOARD, EDIT_PRODUCT_KEYBOARD
+from bot.handlers.seller.templates.keyboards import ADD_PRODUCT_COMPLETE_KEYBOARD, EDIT_PRODUCT_KEYBOARD, SET_SEARCH_DATA_KEYBOARD, DELETE_PRODUCT_KEYBOARD
 from bot.types.utils import MessageSetting, TextTemplate
+from bot.utils.message_utils.config_obj import MessageSetting
 from bot.utils.message_utils.keyboard_utils import get_reply_keyboard
 
 START_MESSAGE = TextTemplate('Привет, ?. Твой профиль: \n\nРейтинг: ?\nДеньги: ?')
@@ -22,3 +23,11 @@ PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE = MessageSetting(text='Это все?', keyb
 COMPLETE_ADD_PRODUCT_MESSAGE_WITH_MEDIA = MessageSetting(text='Все верно указано?',
                                                          keyboard=ADD_PRODUCT_COMPLETE_KEYBOARD)
 COMPLETE_ADD_PRODUCT_MESSAGE = '\n\nВсе верно указано'
+
+SUCCESSFUL_SAVE_PRODUCT = MessageSetting('Продукт успешно сохранен.')
+
+SET_SEARCH_DATA_MESSAGE = MessageSetting('Какое поле вы хотите сделать основным?', keyboard=SET_SEARCH_DATA_KEYBOARD)
+SET_NAME_SEARCH_PRODUCT_MSG = MessageSetting('Введите полное название продукта или его часть.')
+
+DELETE_PRODUCT_MESSAGE = MessageSetting(text='Вы уверены, что хотите удалить продукт?', keyboard=DELETE_PRODUCT_KEYBOARD)
+SUCCESSFUL_DELETE_PRODUCT = MessageSetting(text='Продукт успешно удален.')

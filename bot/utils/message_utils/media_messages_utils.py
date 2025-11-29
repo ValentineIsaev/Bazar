@@ -20,7 +20,7 @@ async def delete_media_message(storage: Storage, bot: Bot):
     if bots_media_message_id is not None:
         if isinstance(bots_media_message_id, int):
             await bot.delete_message(chat_id, bots_media_message_id)
-        elif isinstance(bots_media_message_id, list):
+        elif isinstance(bots_media_message_id, list) or isinstance(bots_media_message_id, tuple):
             for msg_id in bots_media_message_id:
                 await bot.delete_message(chat_id, msg_id)
 

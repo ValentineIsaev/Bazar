@@ -5,13 +5,15 @@ import math
 from bot.configs.constants import ROW_BUTTON_CATALOG_MENU
 
 from bot.services.catalog_service import CatalogMenuService
+from bot.types.utils import MediaSetting
 
 from bot.types.utils import MessageSetting, CallbackSetting
 from bot.utils.message_utils.keyboard_utils import (get_callback_inline_keyboard,
                                                     InlineButtonSetting)
 
 from .templates.messages import *
-from .templates.keyboard import CATALOG_MENU_NEXT, CATALOG_MENU_BACK, PRODUCT_ACTIONS
+from .templates.keyboard import CATALOG_MENU_NEXT, CATALOG_MENU_BACK, PRODUCT_ACTIONS, CHOOSE_PRODUCT_KEYBOARD
+from ...storage.local_media_data import TelegramMediaLocalConsolidator
 
 
 class CatalogRenderer:
@@ -35,9 +37,12 @@ class CatalogRenderer:
 
         return result
 
+    def _generate_callback(self, index: int) -> str:
+        return f'{self._prefix.callback}-{index}'
+
     def _generate_buttons(self, page_data: tuple[tuple[int, Any], ...]) -> tuple[InlineButtonSetting, ...]:
         return tuple(InlineButtonSetting(text=str(i+1),
-                                         callback=f'{self._prefix.callback}-{j[0]}') for i, j in enumerate(page_data))
+                                         callback=self._generate_callback(j[0])) for i, j in enumerate(page_data))
 
 
     def get_id_by_callback(self, callback: str) -> int:
@@ -69,36 +74,31 @@ class CategoryCatalogRenderer(CatalogRenderer):
 
         return MessageSetting(text=text, keyboard=keyboard)
 
-# class ProductCatalogHierarchyManager(CatalogManager):
-#     def __init__(self, catalog_service: CatalogMenuService, choice_callback: str):
-#         super().__init__(catalog_service)
-#
-#         self._choice_callback = choice_callback
-#
-#     @property
-#     def choice_callback(self):
-#         return self._choice_callback
-#
-#     def _render_message(self) -> MessageSetting:
-#         catalog_data = self._catalog_servie.get_catalogs()
-#         main_text = create_list_message(catalog_data, 2) + HEADER_CATALOG_MENU_TEXT
-#         keyboard = create_callback_inline_keyboard(*generate_number_buttons(0, len(catalog_data),
-#                                                                             *parse_callback(self._choice_callback)),
-#                                                    row=ROW_BUTTON_CATALOG_MENU)
-#
-#         return MessageSetting(text=main_text, keyboard=keyboard)
+class ChooseProductCatalogRenderer(CatalogRenderer):
+    def __init__(self, callback_prefix: CallbackSetting):
+        super().__init__(callback_prefix)
+
+    def _render_main_body(self, catalog_service: CatalogMenuService) -> MessageSetting:
+        page_catalog = catalog_service.get_page_catalogs()
+        text = self._generate_list_catalog(page_catalog) + HEADER_CATALOG_MENU_TEXT
+        keyboard = get_callback_inline_keyboard(*self._generate_buttons(page_catalog), CHOOSE_PRODUCT_KEYBOARD,
+                                                row=1)
+
+        return MessageSetting(text=text, keyboard=keyboard)
 
 
-# class ProductCatalogManager(CatalogManager):
-#     def __init__(self, catalog_service: CatalogMenuService):
-#         super().__init__(catalog_service)
-#
-#     def _render_message(self) -> MessageSetting:
-#         catalog_data = self._catalog_servie.get_catalogs()
-#         if len(catalog_data) > 1:
-#             raise ValueError(f'Max product on page - 2. Your: {len(catalog_data)}')
-#         product: Product = catalog_data[0]
-#
-#         text = PRODUCT_INFO_TEXT.insert((product.catalog, product.name, product.price, product.description))
-#
-#         return MessageSetting(text=text, media=product.media, keyboard=PRODUCT_ACTIONS())
+class ProductCatalogRenderer(CatalogRenderer):
+    def __init__(self, callback_prefix: CallbackSetting, media_consolidator: TelegramMediaLocalConsolidator):
+        super().__init__(callback_prefix)
+
+        self._media = media_consolidator
+
+    def _render_main_body(self, catalog_service: CatalogMenuService) -> MessageSetting:
+        ((index, product), ) = catalog_service.get_page_catalogs()
+        text = PRODUCT_INFO_TEXT.insert((product.catalog, product.name_product, product.price, product.description))
+        keyboard = get_callback_inline_keyboard(InlineButtonSetting(text='Купить', callback=self._generate_callback(index)))
+
+        return MessageSetting(text=text, keyboard=keyboard, media=tuple(MediaSetting(type_media=obj.type_media,
+                                                                                     path=obj.path)
+                                                                        for obj in self._media.get_obj_data(*product.media_path))
+        if product.media_path is not None else None)

@@ -18,7 +18,7 @@ from bot.utils.message_utils.keyboard_utils import *
 from bot.utils.filters import CallbackFilter, TypeUserFilter
 
 from bot.storage.redis import FSMStorage
-from bot.managers.product_managers import InputProductManager, ProductCategoryCatalogManager
+from bot.managers.product_managers import InputProductManager, ProductCategoryCatalogManager, ProductManager
 from bot.managers.catalog_manager import CatalogManager
 from bot.types.utils import CallbackSetting
 
@@ -44,7 +44,7 @@ async def input_product_field(msg: Message, fsm_storage: FSMStorage, input_produ
     if result is None:
         if state_data.next_state == AddProductStates.user_checking:
             new_message = render_product_message(await input_product_manager.get_product(),
-                                                 ADD_PRODUCT_COMPLETE_KEYBOARD, media_consolidator)
+                                                 media_consolidator, ADD_PRODUCT_COMPLETE_KEYBOARD)
             new_message.text = new_message.text + COMPLETE_ADD_PRODUCT_MESSAGE
         else:
             new_message = state_data.new_msg
@@ -56,13 +56,26 @@ async def input_product_field(msg: Message, fsm_storage: FSMStorage, input_produ
         await send_message(fsm_storage, msg.bot, new_message, False)
 
 
-@router.callback_query(CallbackFilter(scope='product', subscope='add_catalog'), TypeUserFilter(UserTypes.SELLER))
+@router.callback_query(CallbackFilter(scope='product', subscope='save'), TypeUserFilter(UserTypes.SELLER))
+async def save_product(_: CallbackQuery, product_manager: ProductManager, input_product_manager: InputProductManager,
+                       media_consolidator: TelegramMediaLocalConsolidator, fsm_storage: FSMStorage, bot: Bot):
+    product = await input_product_manager.get_product()
+
+    if product.media_path is not None:
+        objs = media_consolidator.get_obj_data(*product.media_path)
+        product.media_path = await media_consolidator.save_perm_obj(objs)
+
+    await product_manager.create_product(product)
+    await send_message(fsm_storage, bot, SUCCESSFUL_SAVE_PRODUCT)
+
+
 async def add_catalog(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
-                              input_product_manager: InputProductManager, catalog_manager: CatalogManager,
-                              product_category_catalog_manager: ProductCategoryCatalogManager,
+                      input_product_manager: InputProductManager, catalog_manager: CatalogManager,
+                      product_category_catalog_manager: ProductCategoryCatalogManager,
                       media_consolidator: TelegramMediaLocalConsolidator):
     scope, subscope, action = CallbackSetting.decode_callback(cb.data)
-    new_message: MessageSetting | None; is_send_new: bool
+    new_message: MessageSetting | None
+    is_send_new: bool
     new_message, is_send_new = None, True
 
     if action == 'start':
@@ -89,33 +102,66 @@ async def add_catalog(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storag
         await send_message(fsm_storage, bot, new_message, is_send_new)
 
 
-@router.message(StateFilter(AddProductStates.add_name, EditProductStates.EditParam.edit_name))
+@router.callback_query(CallbackFilter(scope='product', subscope='add_catalog'), TypeUserFilter(UserTypes.SELLER))
+async def add_catalog_handler(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
+                              input_product_manager: InputProductManager, catalog_manager: CatalogManager,
+                              product_category_catalog_manager: ProductCategoryCatalogManager,
+                      media_consolidator: TelegramMediaLocalConsolidator):
+    await add_catalog(cb, bot, state, fsm_storage, input_product_manager, catalog_manager,
+                      product_category_catalog_manager, media_consolidator)
+
+
 async def add_name(msg: Message, state: FSMContext, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
                    media_consolidator: TelegramMediaLocalConsolidator):
     await input_product_field(msg, fsm_storage, input_product_manager, state, msg.text, media_consolidator)
 
 
-@router.message(StateFilter(AddProductStates.add_description,
-                                   EditProductStates.EditParam.edit_description))
+@router.message(StateFilter(AddProductStates.add_name, EditProductStates.EditParam.edit_name))
+async def add_name_handler(msg: Message, state: FSMContext, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
+                   media_consolidator: TelegramMediaLocalConsolidator):
+    await add_name(msg, state, fsm_storage, input_product_manager, media_consolidator)
+
+
 async def add_description(msg: Message, state: FSMContext, fsm_storage: FSMStorage,
                           input_product_manager: InputProductManager,
                           media_consolidator: TelegramMediaLocalConsolidator):
     await input_product_field(msg, fsm_storage, input_product_manager, state, msg.text, media_consolidator)
 
 
+
+@router.message(StateFilter(AddProductStates.add_description,
+                                   EditProductStates.EditParam.edit_description))
+async def add_description_handler(msg: Message, state: FSMContext, fsm_storage: FSMStorage,
+                          input_product_manager: InputProductManager,
+                          media_consolidator: TelegramMediaLocalConsolidator):
+    await add_description(msg, state, fsm_storage, input_product_manager, media_consolidator)
+
+
+async def add_media(msg: Message, state: FSMContext, fsm_storage: FSMStorage,
+                          input_product_manager: InputProductManager,
+                          media_consolidator: TelegramMediaLocalConsolidator):
+    media = await get_media_objs(msg, fsm_storage, media_consolidator, PHOTO_INPUT_STOP_TEXT,
+                                 PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, '/skip', 3)
+
+    if media:
+        await  input_product_field(msg, fsm_storage, input_product_manager, state, media, media_consolidator)
+
+
 @router.message(or_f(F.photo, F.video, Command('skip'),
                      StateFilter(AddProductStates.add_photo,
                                         EditProductStates.EditParam.edit_photo)))
-async def add_media(msg: Message, state: FSMContext, fsm_storage: FSMStorage,
+async def add_media_handler(msg: Message, state: FSMContext, fsm_storage: FSMStorage,
                     input_product_manager: InputProductManager,
                     media_consolidator: TelegramMediaLocalConsolidator):
-    media = await get_media_objs(msg, fsm_storage, media_consolidator, PHOTO_INPUT_STOP_TEXT,
-                           PROCESS_INPUT_PHOTO_PRODUCT_MESSAGE, '/skip', 3)
-    if media:
-        await input_product_field(msg, fsm_storage, input_product_manager, state, media, media_consolidator)
+    await add_media(msg, state, fsm_storage, input_product_manager, media_consolidator)
+
+
+async def add_price(msg: Message, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
+                    state: FSMContext, media_consolidator: TelegramMediaLocalConsolidator):
+    await input_product_field(msg, fsm_storage, input_product_manager, state, msg.text, media_consolidator)
 
 
 @router.message(StateFilter(AddProductStates.add_price, EditProductStates.EditParam.edit_price))
-async def add_price(msg: Message, state: FSMContext, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
+async def add_price_handler(msg: Message, state: FSMContext, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
                     media_consolidator: TelegramMediaLocalConsolidator):
-    await input_product_field(msg, fsm_storage, input_product_manager, state, msg.text, media_consolidator)
+    await add_price(msg, fsm_storage, input_product_manager, state, media_consolidator)

@@ -8,10 +8,10 @@ from aiogram.types import Message
 from bot.storage.redis.storage import FSMStorage
 from aiogram.fsm.state import State
 
-from bot.constants.redis_keys import FSMKeys
+from bot.constants.redis_keys import FSMKeys, UserSessionKeys
 
 from bot.types.utils import MessageSetting
-from bot.utils.message_utils import send_message, get_saved_media_data
+from bot.utils.message_utils import send_message, get_saved_media_data, delete_bot_message, delete_media_message
 
 from bot.managers.product_managers import ProductCategoryCatalogManager, InputProductManager
 from bot.managers.catalog_manager import CatalogManager
@@ -113,8 +113,8 @@ async def get_media_objs(msg: Message, fsm_storage: FSMStorage, media_consolidat
                                          FSMKeys.SAVED_MEDIA_DATA: saved_media_data})
         return result
 
-def render_product_message(product: Product, keyboard: inline_keyboard_markup,
-                                 media_consolidator: TelegramMediaLocalConsolidator) -> MessageSetting:
+def render_product_message(product: Product, media_consolidator: TelegramMediaLocalConsolidator,
+                           keyboard: inline_keyboard_markup=None) -> MessageSetting:
     return MessageSetting(
         text=PRODUCT_TEXT.insert((product.catalog, product.name_product, product.description, product.price)),
         keyboard=keyboard,
@@ -122,3 +122,20 @@ def render_product_message(product: Product, keyboard: inline_keyboard_markup,
                        for media in media_consolidator.get_obj_data(*product.media_path)) \
         if product.media_path is not None else None
     )
+
+async def delete_product_message(fsm_storage: FSMStorage, bot: Bot):
+    bot_msg, bot_media_msg, product_msg, product_media_msg = await fsm_storage.get_data(UserSessionKeys.BOTS_MESSAGE_ID,
+                                                                                        UserSessionKeys.BOTS_MEDIA_MESSAGE_ID,
+                                                                                        UserSessionKeys.PRODUCT_MESSAGE_ID,
+                                                                                        UserSessionKeys.PRODUCT_MEDIA_MESSAGE_ID)
+    if product_msg is not None or product_media_msg is not None:
+        await fsm_storage.update_data(**{UserSessionKeys.BOTS_MESSAGE_ID: product_msg,
+                                         UserSessionKeys.BOTS_MEDIA_MESSAGE_ID: product_media_msg})
+
+        await delete_bot_message(fsm_storage, bot)
+        await delete_media_message(fsm_storage, bot)
+
+        await fsm_storage.update_data(**{UserSessionKeys.BOTS_MESSAGE_ID: bot_msg,
+                                         UserSessionKeys.BOTS_MEDIA_MESSAGE_ID: bot_media_msg,
+                                         UserSessionKeys.PRODUCT_MESSAGE_ID: None,
+                                         UserSessionKeys.PRODUCT_MEDIA_MESSAGE_ID: None})

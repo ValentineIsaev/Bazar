@@ -16,9 +16,8 @@ class ValidationResult:
 
 
 class InputProductService:
-    def __init__(self):
-
-        self._product = Product()
+    def __init__(self, product: Product=None):
+        self._product = Product() if product is None else product
 
         self._VALIDATION_FUNCS = {
             'price': self._validate_price,

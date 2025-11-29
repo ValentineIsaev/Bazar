@@ -5,12 +5,14 @@ MENU_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Доба�
                                                                  callback=CallbackSetting.encode_callback('product',
                                                                                           'add_catalog',
                                                                                           'start')),
+                                             InlineButtonSetting(text='Редактировать товар',
+                                                                 callback=CallbackSetting.encode_callback('product',
+                                                                                                          'choose_product',
+                                                                                                          'start_edit')),
                                              InlineButtonSetting(text='Удалить товар',
                                                                  callback=CallbackSetting.encode_callback('product',
-                                                                                          'delete',
-                                                                                          'start')),
-                                             InlineButtonSetting(text='Вывести деньги',
-                                                                 callback='withdraw_money'))
+                                                                                          'choose_product',
+                                                                                          'start_delete')))
 
 EDIT_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Имя',
                                                                          callback=CallbackSetting.encode_callback(
@@ -40,12 +42,17 @@ EDIT_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='�
 ADD_PRODUCT_COMPLETE_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Да',
                                                                                  callback=CallbackSetting.encode_callback(
                                                                                      'product',
-                                                                                     'add',
-                                                                                     'send_product',
-                                                                                 )), InlineButtonSetting(
+                                                                                     'save', '_')), InlineButtonSetting(
     text='Нет',
     callback=CallbackSetting.encode_callback(
         'product',
         'edit',
         'start'
     )))
+
+SET_SEARCH_DATA_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Каталог', callback=CallbackSetting.encode_callback('product',
+                                                                                                                                     'choose_product',
+                                                                                                                                     'start_set_catalog')))
+
+DELETE_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Да', callback=CallbackSetting.encode_callback('product', 'delete_product', 'delete')),
+                                                       InlineButtonSetting(text='Нет', callback=CallbackSetting.encode_callback('product', 'choose_product', 'start_delete')))

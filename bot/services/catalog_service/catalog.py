@@ -16,6 +16,9 @@ class CatalogMenuService:
     def is_start_page(self) -> bool:
         return self._page == 0
 
+    def get_all(self) -> tuple[tuple[int, Any] , ...]:
+        return self._catalogs
+
     def next_page(self):
         if not self.is_end_page:
             self._page += 1

@@ -7,6 +7,11 @@ class UserSessionKeys:
 
     INPUT_PRODUCT_SERVICE = 'input_product_service'
 
+    PRODUCT_MESSAGE_ID = 'product_message_id'
+    PRODUCT_MEDIA_MESSAGE_ID = 'product_media_message_id'
+
+    TEMP_PRODUCT = 'temp_product'
+
 
 class FSMKeys:
     USER_ASYNC_LOCK = 'async_lock'
@@ -14,6 +19,9 @@ class FSMKeys:
     TEMP_BOT_MSG = 'temp_bot_message'
     USERS_MEDIA_MSGS = 'user_media_msgs'
     SAVED_MEDIA_DATA = 'saved_media_data'
+
+    class EditProduct:
+        USER_PRODUCT_LIST = 'user_product_list'
 
     class CatalogData:
         CATALOG_RENDERER = 'catalog_renderer'

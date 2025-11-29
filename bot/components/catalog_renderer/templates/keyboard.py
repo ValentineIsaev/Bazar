@@ -19,3 +19,6 @@ def PRODUCT_ACTIONS() -> inline_keyboard_markup:
         'send_answer'
     )))
 
+CHOOSE_PRODUCT_KEYBOARD = (InlineButtonSetting(text='Сортировать', callback=CallbackSetting.encode_callback('product',
+                                                                                                            'choose_product',
+                                                                                                            'set_choice')))

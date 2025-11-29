@@ -22,6 +22,10 @@ class CatalogManager(StorageManager):
         self._renderer: CatalogRenderer | None = None
         self._catalog_service: CatalogMenuService | None = None
 
+    @property
+    def is_set_require_fields(self) -> bool:
+        return self._renderer is not None and self._catalog_service is not None
+
     async def set_renderer(self, renderer: CatalogRenderer):
         await self._storage.update_value(FSMKeys.CatalogData.CATALOG_RENDERER, renderer)
         self._renderer = renderer
@@ -29,6 +33,10 @@ class CatalogManager(StorageManager):
     async def set_catalog_service(self, catalog_service: CatalogMenuService):
         await self._storage.update_value(FSMKeys.CatalogData.CATALOG_SERVICE, catalog_service)
         self._catalog_service = catalog_service
+
+    @require_field('_catalog_service', FSMKeys.CatalogData.CATALOG_SERVICE)
+    async def get_all(self) -> tuple[tuple[int, Any], ...]:
+        return self._catalog_service.get_all()
 
     @require_field('_catalog_service', FSMKeys.CatalogData.CATALOG_SERVICE)
     async def scroll_catalog(self, mode: str):
@@ -53,6 +61,8 @@ class CatalogManager(StorageManager):
     @require_field('_catalog_service', FSMKeys.CatalogData.CATALOG_SERVICE)
     @require_field('_renderer', FSMKeys.CatalogData.CATALOG_RENDERER)
     async def get_catalog_by_callback(self, callback: str) -> Any:
+        # Callback much have full elements
+
         id_element = self._renderer.get_id_by_callback(callback)
         return self._catalog_service.get_element_by_id(id_element)
 

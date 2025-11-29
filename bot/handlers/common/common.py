@@ -15,7 +15,6 @@ unexpected_router = Router()
 @common_router.message(Command('start'))
 async def handler_start(msg: Message, fsm_storage: FSMStorage):
     user_data = await fsm_storage.get_all_data()
-    print(user_data)
     if not user_data:
         await fsm_storage.update_data(**{UserSessionKeys.CHAT_ID: msg.chat.id,
                                      UserSessionKeys.USERNAME: msg.from_user.first_name,

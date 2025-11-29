@@ -12,6 +12,12 @@ class SellerStates(StatesGroup):
 
 
 class EditProductStates(StatesGroup):
+    delete_product = State()
+    edit_product = State()
+
+    set_name_edit_product = State()
+    set_name_delete_product = State()
+
     choose_param = State()
     class EditParam(StatesGroup):
         edit_name = State()
