@@ -1,8 +1,9 @@
 from typing import TypeVar, Generic
+from bot.configs.constants import UserTypes
 
 from .models import UserBase, ProductBase, MediatorChatBase, MediatorMessageBase, MoneyBalanceBase
 
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 T = TypeVar('T')
@@ -34,3 +35,42 @@ class ProductsRepository(BaseRepository):
 class ChatsMediatorRepository(BaseRepository[MediatorChatBase]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, MediatorChatBase)
+
+    async def get_chats(self, user_id: int, user_role: str) -> tuple[T, ...]:
+        field = self._model.buyer_user_id if user_role == UserTypes.BUYER else self._model.seller_user_id
+        stmt = select(self._model).where(field == user_id)
+        result = await self._session.execute(stmt)
+
+        return tuple(result.scalars().all())
+
+    async def start_chat(self, chat_data: T) -> T:
+        self._session.add(chat_data)
+        await self._session.refresh(chat_data)
+        await self._session.commit()
+
+        return chat_data
+
+    async def delete_chat(self, chat_id: int):
+        stmt = delete(self._model).where(self._model.mediator_chat_id == chat_id)
+        await self._session.execute(stmt)
+        await self._session.commit()
+
+
+class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
+    def __init__(self, session: AsyncSession):
+        super().__init__(session, MediatorMessageBase)
+
+    async def get_chat_msgs(self, chat_id: int) -> tuple[T, ...]:
+        stmt = select(self._model).where(self._model.mediator_chat_id == chat_id)
+        result = await self._session.execute(stmt)
+
+        return tuple(result.scalars().all())
+
+    async def send_msg(self, msg: MediatorMessageBase):
+        self._session.add(msg)
+        await self._session.commit()
+
+    async def delete_msgs(self, chat_id: int):
+        stmt = delete(self._model).where(self._model.mediator_chat_id == chat_id)
+        await self._session.execute(stmt)
+        await self._session.commit()

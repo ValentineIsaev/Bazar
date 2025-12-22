@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 
 from bot.dependencies import (DIMiddleware, set_product_manager, set_input_product_manager, set_catalog_manager,
-                              set_product_category_catalog_manager, SetterMediaConsolidator)
+                              set_product_category_catalog_manager, SetterMediaConsolidator, set_mediator_manager)
 
 from bot.storage.postgres import SessionLocal
 from bot.storage.redis.core import user_session_redis
@@ -21,8 +21,9 @@ async def set_dependencies(dp: Dispatcher, bot: Bot):
     di_middleware = DIMiddleware(product_manager=set_product_manager,
                                  input_product_manager=set_input_product_manager,
                                  catalog_manager=set_catalog_manager,
-                                 product_category_catalog_manager=set_product_category_catalog_manager,
-                                 media_consolidator=set_media_consolidator)
+                                 products_catalog_manager=set_product_category_catalog_manager,
+                                 media_consolidator=set_media_consolidator,
+                                 mediator_manager=set_mediator_manager)
     dp.message.middleware(di_middleware)
     dp.callback_query.middleware(di_middleware)
 

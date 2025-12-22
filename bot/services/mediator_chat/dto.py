@@ -15,26 +15,33 @@ from pathlib import Path
 
 @dataclass
 class Chat:
+    table_id: int
     chat_id: int
 
-    f_user_id: int
-    f_user_role: str
-
-    s_user_id: int
-    s_user_role: str
+    seller_user_id: int
+    buyer_user_id: int
+    product_id: int
 
     chat_name: str
-    is_stop: bool
-
 
 
 @dataclass
 class ChatMessage:
-    senders_id: int
-    senders_role: str
+    chat_id: int
+    table_msg_id: int
 
-    recipients_id: int
-    recipients_role: str
+    sender_id: int
+
+    date: str
 
     text: str
     media: Path = None
+
+    is_my_message: bool = None
+
+
+@dataclass
+class ErrorSendMessage:
+    is_error: bool
+    error: str = None
+

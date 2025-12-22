@@ -7,6 +7,10 @@ from bot.configs.configs import media_storage_data
 from pathlib import Path
 from aiogram import Bot
 
+from bot.services.mediator_chat import MediatorService
+from bot.managers.mediator_manager import MediatorManager
+from bot.components.mediator_render import MediatorTelegramRenderer
+
 
 def set_product_manager(data: dict):
     session = data['db_session']
@@ -28,6 +32,15 @@ def set_catalog_manager(data: dict):
     fsm_storage = data['fsm_storage']
 
     return CatalogManager(fsm_storage)
+
+
+mediator_service = MediatorService()
+mediator_renderer = MediatorTelegramRenderer()
+def set_mediator_manager(data: dict):
+    session = data['db_session']
+
+    return MediatorManager(session, mediator_renderer, mediator_service)
+
 
 class SetterMediaConsolidator:
     def __init__(self, bot: Bot, temp_storage_path: Path, perm_storage_path: Path):
