@@ -7,7 +7,8 @@ from handlers import (seller_router,
                       buyer_router,
                       common_router,
                       catalog_menu_router,
-                      unexpected_router)
+                      unexpected_router,
+                      mediator_router)
 
 import asyncio
 
@@ -18,7 +19,7 @@ async def main():
 
     await set_dependencies(dp, bot)
 
-    dp.include_routers(common_router, seller_router, buyer_router, catalog_menu_router)
+    dp.include_routers(common_router, seller_router, buyer_router, catalog_menu_router, mediator_router)
     print('Start bot!')
 
     dp.include_router(unexpected_router)

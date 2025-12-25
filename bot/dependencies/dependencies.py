@@ -10,6 +10,7 @@ from aiogram import Bot
 from bot.services.mediator_chat import MediatorService
 from bot.managers.mediator_manager import MediatorManager
 from bot.components.mediator_render import MediatorTelegramRenderer
+from bot.types.utils import MessageSetting
 
 
 def set_product_manager(data: dict):
@@ -39,7 +40,7 @@ mediator_renderer = MediatorTelegramRenderer()
 def set_mediator_manager(data: dict):
     session = data['db_session']
 
-    return MediatorManager(session, mediator_renderer, mediator_service)
+    return MediatorManager[MessageSetting](session, mediator_renderer, mediator_service)
 
 
 class SetterMediaConsolidator:

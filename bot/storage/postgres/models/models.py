@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import DateTime, ARRAY, String
+from sqlalchemy import DateTime, ARRAY, String, BigInteger
 
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
@@ -15,7 +15,7 @@ class ProductBase(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     product_id: Mapped[int]
-    autor_id: Mapped[int]
+    autor_id: Mapped[str]
 
     name_product: Mapped[str]
     catalog: Mapped[str]
@@ -30,8 +30,8 @@ class UserBase(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int]
-    tg_chat_id: Mapped[int]
+    user_id: Mapped[str]
+    tg_chat_id: Mapped[str]
 
 
 class MoneyBalanceBase(Base):
@@ -39,7 +39,7 @@ class MoneyBalanceBase(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    user_id: Mapped[int]
+    user_id: Mapped[str]
     money_amount: Mapped[float]
 
 
@@ -48,11 +48,11 @@ class MediatorChatBase(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    seller_user_id: Mapped[int]
-    buyer_user_id: Mapped[int]
+    seller_user_id: Mapped[str]
+    buyer_user_id: Mapped[str]
     product_id: Mapped[int]
 
-    mediator_chat_id: Mapped[int]
+    mediator_chat_id: Mapped[str]
     chat_name: Mapped[str]
 
 
@@ -61,10 +61,10 @@ class MediatorMessageBase(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    mediator_chat_id: Mapped[int]
-    sender_id: Mapped[int]
+    mediator_chat_id: Mapped[str]
+    sender_id: Mapped[str]
 
-    sender_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow())
+    sender_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     media_path: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
     text: Mapped[str] = mapped_column(nullable=True)
 

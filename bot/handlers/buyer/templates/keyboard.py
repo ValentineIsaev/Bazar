@@ -17,4 +17,4 @@ BUY_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='О
                                                                                                                  'buy',
                                                                                                                  'back')),
                                                     InlineButtonSetting(text='Задать вопрос',
-                                                                        callback=CallbackSetting.encode_callback('_', '_', '_')))
+                                                                        callback=CallbackSetting.encode_callback('mediator_chat', 'chat', 'start')))

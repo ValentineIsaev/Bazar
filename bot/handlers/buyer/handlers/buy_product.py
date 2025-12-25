@@ -32,7 +32,7 @@ buyer_router = Router()
 async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_manager: ProductManager,
                               fsm_storage: FSMStorage,
                               catalog_manager: CatalogManager,
-                              product_category_catalog_manager: ProductCategoryCatalogManager,
+                              products_catalog_manager: ProductCategoryCatalogManager,
                               media_consolidator: TelegramMediaLocalConsolidator):
     scope, subscope, action = CallbackSetting.decode_callback(cb.data)
     new_message: MessageSetting | None = None
@@ -40,7 +40,7 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_mana
         if action == 'start':
             await state.set_state(BuyerStates.BuyProduct.look_product)
             await set_category_catalog_manager(catalog_manager,
-                                                             product_category_catalog_manager,
+                                                             products_catalog_manager,
                                                              CallbackSetting(scope, subscope, 'choice_catalog'))
             new_message = await catalog_manager.render_message()
 

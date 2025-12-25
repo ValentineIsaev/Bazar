@@ -1,29 +1,22 @@
 from abc import abstractmethod
 from typing import TypeVar, Generic
 from bot.services.mediator_chat import ChatMessage, Chat
+from bot.utils.message_utils import get_callback_inline_keyboard
+from bot.types.utils import InlineButtonSetting
 
 from bot.types.utils import MessageSetting
 
 RenderType = TypeVar('RenderType')
 class MediatorRenderer(Generic[RenderType]):
     @abstractmethod
-    def render_input_new_msg(self) -> RenderType:
-        pass
-
-    @abstractmethod
-    def render_chat_list(self, chats: tuple[Chat, ...]) -> RenderType:
-        pass
-
-    @abstractmethod
     def render_chat_msgs(self, msgs: tuple[ChatMessage, ...]) -> RenderType:
         pass
 
 class MediatorTelegramRenderer(MediatorRenderer[MessageSetting]):
-    def render_input_new_msg(self) -> RenderType:
-        pass
-
-    def render_chat_list(self, chats: tuple[Chat, ...]) -> RenderType:
-        pass
-
     def render_chat_msgs(self, msgs: tuple[ChatMessage, ...]) -> RenderType:
-        pass
+        if msgs is None:
+            text = 'Ничего нет.'
+        else:
+            text = ' '.join(msg.text for msg in msgs)
+        return MessageSetting(text=text, keyboard=get_callback_inline_keyboard(InlineButtonSetting(
+            text='Отправить сообщение', callback='mediator_chat/msgs/send')))

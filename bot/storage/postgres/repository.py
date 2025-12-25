@@ -38,19 +38,19 @@ class ChatsMediatorRepository(BaseRepository[MediatorChatBase]):
 
     async def get_chats(self, user_id: int, user_role: str) -> tuple[T, ...]:
         field = self._model.buyer_user_id if user_role == UserTypes.BUYER else self._model.seller_user_id
-        stmt = select(self._model).where(field == user_id)
+        stmt = select(self._model).where(field == str(user_id))
         result = await self._session.execute(stmt)
 
         return tuple(result.scalars().all())
 
     async def start_chat(self, chat_data: T) -> T:
         self._session.add(chat_data)
-        await self._session.refresh(chat_data)
         await self._session.commit()
+        await self._session.refresh(chat_data)
 
         return chat_data
 
-    async def delete_chat(self, chat_id: int):
+    async def delete_chat(self, chat_id: str):
         stmt = delete(self._model).where(self._model.mediator_chat_id == chat_id)
         await self._session.execute(stmt)
         await self._session.commit()
@@ -60,7 +60,7 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, MediatorMessageBase)
 
-    async def get_chat_msgs(self, chat_id: int) -> tuple[T, ...]:
+    async def get_chat_msgs(self, chat_id: str) -> tuple[T, ...]:
         stmt = select(self._model).where(self._model.mediator_chat_id == chat_id)
         result = await self._session.execute(stmt)
 
@@ -70,7 +70,7 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
         self._session.add(msg)
         await self._session.commit()
 
-    async def delete_msgs(self, chat_id: int):
+    async def delete_msgs(self, chat_id: str):
         stmt = delete(self._model).where(self._model.mediator_chat_id == chat_id)
         await self._session.execute(stmt)
         await self._session.commit()

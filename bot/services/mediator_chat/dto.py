@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from pathlib import Path
+from bot.types.storage import LocalObjPath
 
 
 # @dataclass
@@ -16,7 +16,7 @@ from pathlib import Path
 @dataclass
 class Chat:
     table_id: int
-    chat_id: int
+    chat_id: str
 
     seller_user_id: int
     buyer_user_id: int
@@ -27,15 +27,15 @@ class Chat:
 
 @dataclass
 class ChatMessage:
-    chat_id: int
-    table_msg_id: int
+    chat_id: str
 
     sender_id: int
 
-    date: str
-
     text: str
-    media: Path = None
+
+    table_msg_id: int = None
+    date: str = None
+    media: LocalObjPath = None
 
     is_my_message: bool = None
 

@@ -1,1 +1,1 @@
-from mediator_renderer import MediatorRenderer, RenderType, MediatorTelegramRenderer
+from .mediator_renderer import MediatorRenderer, RenderType, MediatorTelegramRenderer

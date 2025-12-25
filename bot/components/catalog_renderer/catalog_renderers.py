@@ -102,3 +102,14 @@ class ProductCatalogRenderer(CatalogRenderer):
                                                                                      path=obj.path)
                                                                         for obj in self._media.get_obj_data(*product.media_path))
         if product.media_path is not None else None)
+
+class MediatorChatsRenderer(CatalogRenderer):
+    def __init__(self, callback_prefix: CallbackSetting):
+        super().__init__(callback_prefix)
+
+    def _render_main_body(self, catalog_service: CatalogMenuService) -> MessageSetting:
+        chats = catalog_service.get_page_catalogs()
+        keyboard = get_callback_inline_keyboard(*self._generate_buttons(chats))
+        chats = tuple(chat.chat_name for (_, chat) in chats)
+        return MessageSetting(text=' '.join(chats), keyboard=keyboard)
+

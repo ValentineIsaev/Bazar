@@ -11,6 +11,7 @@ class UserSessionKeys:
     PRODUCT_MEDIA_MESSAGE_ID = 'product_media_message_id'
 
     TEMP_PRODUCT = 'temp_product'
+    MEDIATOR_CHAT = 'mediator_chat'
 
 
 class FSMKeys:
