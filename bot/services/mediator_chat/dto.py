@@ -24,6 +24,8 @@ class Chat:
 
     chat_name: str
 
+    count_update: int = None
+
 
 @dataclass
 class ChatMessage:
@@ -35,7 +37,7 @@ class ChatMessage:
 
     table_msg_id: int = None
     date: str = None
-    media: LocalObjPath = None
+    media: tuple[LocalObjPath, ...] = None
 
     is_my_message: bool = None
 

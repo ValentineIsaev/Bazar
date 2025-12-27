@@ -104,12 +104,33 @@ class ProductCatalogRenderer(CatalogRenderer):
         if product.media_path is not None else None)
 
 class MediatorChatsRenderer(CatalogRenderer):
-    def __init__(self, callback_prefix: CallbackSetting):
-        super().__init__(callback_prefix)
+    def __init__(self, get_callback_prefix: CallbackSetting, delete_callback_prefix: CallbackSetting):
+        super().__init__(get_callback_prefix)
+
+        self._delete_prefix = delete_callback_prefix
+
+    def get_id_by_callback(self, callback: str) -> int:
+        if self._prefix.callback in callback:
+            return int(callback.replace(f'{self._prefix.callback}-', ''))
+        return int(callback.replace(f'{self._delete_prefix}-', ''))
+
+    def _generate_delete_callback(self, index: int) -> str:
+        return f'{self._delete_prefix}-{index}'
+
+    def _generate_delete_buttons(self, page_data: tuple[tuple[int, Any]]) -> tuple[InlineButtonSetting, ...]:
+        return tuple(InlineButtonSetting(text='Удалить', callback=self._generate_delete_callback(i))
+                     for i, _ in page_data)
+
+    def _generate_buttons(self, page_data: tuple[tuple[int, Any], ...]) -> tuple[InlineButtonSetting, ...]:
+        return tuple(InlineButtonSetting(text=chat.chat_name, callback=self._generate_callback(i)) for i, chat in page_data)
 
     def _render_main_body(self, catalog_service: CatalogMenuService) -> MessageSetting:
-        chats = catalog_service.get_page_catalogs()
-        keyboard = get_callback_inline_keyboard(*self._generate_buttons(chats))
-        chats = tuple(chat.chat_name for (_, chat) in chats)
-        return MessageSetting(text=' '.join(chats), keyboard=keyboard)
+        page_data = catalog_service.get_page_catalogs()
+
+        delete_buttons = self._generate_delete_buttons(page_data)
+        chat_buttons = self._generate_buttons(page_data)
+        keyboard_data = tuple(item for data in zip(chat_buttons, delete_buttons) for item in data)
+        keyboard = get_callback_inline_keyboard(*keyboard_data, row=2)
+
+        return MessageSetting(keyboard=keyboard)
 

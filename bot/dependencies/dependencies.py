@@ -1,4 +1,4 @@
-from bot.managers.product_managers import ProductManager, InputProductManager, ProductCategoryCatalogManager
+from bot.managers.product_managers import ProductManager, InputProductManager, ProductCategoryManager
 
 from bot.managers.catalog_manager import CatalogManager
 from bot.storage.local_media_data import TelegramMediaLocalConsolidator
@@ -20,14 +20,13 @@ def set_product_manager(data: dict):
 
 def set_input_product_manager(data: dict):
     fsm_storage = data['fsm_storage']
-    session = data['db_session']
 
-    return InputProductManager(fsm_storage, session)
+    return InputProductManager(fsm_storage)
 
 def set_product_category_catalog_manager(data: dict):
     session = data['db_session']
 
-    return ProductCategoryCatalogManager(session)
+    return ProductCategoryManager(session)
 
 def set_catalog_manager(data: dict):
     fsm_storage = data['fsm_storage']

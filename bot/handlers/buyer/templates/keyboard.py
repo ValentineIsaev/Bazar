@@ -6,7 +6,11 @@ from bot.utils.message_utils.keyboard_utils import get_callback_inline_keyboard,
 START_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Купить товар',
                                                                   callback=CallbackSetting.encode_callback('buy_product',
                                                                                            'choice_product',
-                                                                                           'start')))
+                                                                                           'start')),
+                                              InlineButtonSetting(text='M-chat',
+                                                                  callback=CallbackSetting.encode_callback('mediator_chat',
+                                                                                                           'chat',
+                                                                                                           'get_chats')))
 
 BUY_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Оплатить',
                                                                         callback=CallbackSetting.encode_callback('buy_product',
@@ -17,4 +21,4 @@ BUY_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='О
                                                                                                                  'buy',
                                                                                                                  'back')),
                                                     InlineButtonSetting(text='Задать вопрос',
-                                                                        callback=CallbackSetting.encode_callback('mediator_chat', 'chat', 'start')))
+                                                                        callback=CallbackSetting.encode_callback('mediator_chat', 'msgs', 'send_start')))

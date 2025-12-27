@@ -1,1 +1,1 @@
-from .product import ProductManager, InputProductManager, ProductCategoryCatalogManager
+from .product import ProductManager, InputProductManager, ProductCategoryManager

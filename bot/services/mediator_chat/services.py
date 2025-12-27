@@ -10,7 +10,17 @@ class MediatorService:
         pass
 
     def processing_chat_msgs(self, msgs: tuple[ChatMessage, ...], user_id: int) -> tuple[ChatMessage, ...]:
+        for msg in msgs:
+            if msg.sender_id == user_id:
+                msg.is_my_message = True
+                continue
+            msg.is_my_message = False
         return msgs
+
+    def processing_chats_list(self, count_updates: tuple[int, ...], chats: tuple[Chat, ...]) -> tuple[Chat, ...]:
+        for count, chat in zip(count_updates, chats):
+            chat.count_update = count
+        return chats
 
     def processing_send_msg(self, msg: ChatMessage) -> ErrorSendMessage:
         if len(msg.text) < 2:
@@ -29,7 +39,7 @@ class MediatorService:
             'buyer_id': buyer_id,
             'product_id': product_id,
             'chat_id': self.__generate_chat_id(seller_id, buyer_id, product_id),
-            'chat_name': chat_name_prefix.insert(product_name)
+            'chat_name': chat_name_prefix.insert((product_name,))
         }
 
 

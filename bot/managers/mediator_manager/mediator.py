@@ -1,4 +1,5 @@
 from typing import Generic
+from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +10,7 @@ from bot.components.mediator_render import MediatorRenderer, RenderType
 from bot.services.mediator_chat import MediatorService
 
 from bot.services.mediator_chat import Chat, ChatMessage
+from bot.types.storage import LocalObjPath
 
 class MediatorManager(Generic[RenderType]):
     def __init__(self, session: AsyncSession, renderer: MediatorRenderer[RenderType],
@@ -37,23 +39,45 @@ class MediatorManager(Generic[RenderType]):
     def __msgs_dto_to_model(self, *msgs: ChatMessage) -> tuple[MediatorMessageBase, ...]:
         return tuple(MediatorMessageBase(mediator_chat_id=msg.chat_id,
                                          sender_id=str(msg.sender_id),
-                                         media_path=[msg.media.path] if msg.media is not None else None,
+                                         media_path=[media.path for media in msg.media] if msg.media is not None else None,
                                          text=msg.text) for msg in msgs)
 
-    def __msgs_model_to_dto(self, *msgs_model: MediatorMessageBase) -> tuple[ChatMessage]:
-        pass
+    def __msgs_model_to_dto(self, *msgs_model: MediatorMessageBase) -> tuple[ChatMessage, ...]:
+        return tuple(ChatMessage(chat_id=msg.mediator_chat_id,
+                                 sender_id=int(msg.sender_id),
+                                 text=msg.text,
+                                 table_msg_id=msg.id,
+                                 date=str(msg.sender_date),
+                                 media=tuple(LocalObjPath(Path(path)) for path in msg.media_path)
+                                 if msg.media_path is not None else None) for msg in msgs_model)
 
     async def get_chats(self, user_id: int, user_role: str) -> tuple[Chat, ...]:
         chats = await self._chat_repo.get_chats(user_id, user_role)
-        return self.__chat_model_to_dto(*chats)
+        dto_chats = self.__chat_model_to_dto(*chats)
+
+        counts_updates = tuple([await self._msg_repo.get_count_new_msgs(chat.chat_id, user_id) for chat in dto_chats])
+        return self._service.processing_chats_list(counts_updates, dto_chats)
 
     async def _get_msgs(self, chat_id: str, user_id: int) -> tuple[ChatMessage, ...]:
         msgs = await self._msg_repo.get_chat_msgs(chat_id)
-        return self._service.processing_chat_msgs(msgs, user_id)
+        chat_msgs = self.__msgs_model_to_dto(*msgs)
+        return self._service.processing_chat_msgs(chat_msgs, user_id)
+
+    async def _get_new_msgs(self, chat_id: str, user_id: int) -> tuple[ChatMessage, ...]:
+        msgs = await self._msg_repo.get_new_msgs(chat_id, user_id)
+        print(msgs)
+        chat_msgs = self.__msgs_model_to_dto(*msgs)
+        return self._service.processing_chat_msgs(chat_msgs, user_id)
 
     async def get_render_msgs(self, chat_id: str, user_id: int) -> RenderType:
         msgs = await self._get_msgs(chat_id, user_id)
         return self._renderer.render_chat_msgs(msgs)
+
+    async def get_render_update_msgs(self, chat_id: str, user_id: int) -> RenderType:
+        msgs = await self._get_new_msgs(chat_id, user_id)
+        if len(msgs) > 0:
+            return self._renderer.render_chat_msgs(msgs)
+        return await self.get_render_msgs(chat_id, user_id)
 
     async def delete_chat(self, chat_id: str):
         await self._chat_repo.delete_chat(chat_id)

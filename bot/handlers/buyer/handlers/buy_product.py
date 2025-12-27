@@ -9,7 +9,7 @@ from bot.storage.redis import FSMStorage
 from aiogram import Router
 # from bot.components.catalog_renderer import ProductCatalogManager
 from bot.handlers.utils import set_category_catalog_manager
-from bot.managers.product_managers import ProductManager, ProductCategoryCatalogManager
+from bot.managers.product_managers import ProductManager, ProductCategoryManager
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
@@ -32,7 +32,7 @@ buyer_router = Router()
 async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_manager: ProductManager,
                               fsm_storage: FSMStorage,
                               catalog_manager: CatalogManager,
-                              products_catalog_manager: ProductCategoryCatalogManager,
+                              products_catalog_manager: ProductCategoryManager,
                               media_consolidator: TelegramMediaLocalConsolidator):
     scope, subscope, action = CallbackSetting.decode_callback(cb.data)
     new_message: MessageSetting | None = None
@@ -46,7 +46,8 @@ async def buy_product_handler(cb: CallbackQuery, state: FSMContext, product_mana
 
         elif action.startswith('choice_catalog'):
             selected_catalog = await catalog_manager.get_catalog_by_callback(cb.data)
-            products = product_manager.get_products_by_catalog(selected_catalog)
+            products = await product_manager.get_products_by_catalog(selected_catalog)
+            print(products)
 
             catalog_service = CatalogMenuService(tuple((p.product_id, p) for p in products), 1)
             catalog_renderer = ProductCatalogRenderer(callback_prefix=CallbackSetting('buy_product',

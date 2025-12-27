@@ -13,7 +13,7 @@ from bot.constants.redis_keys import FSMKeys, UserSessionKeys
 from bot.types.utils import MessageSetting
 from bot.utils.message_utils import send_message, get_saved_media_data, delete_bot_message, delete_media_message
 
-from bot.managers.product_managers import ProductCategoryCatalogManager, InputProductManager
+from bot.managers.product_managers import ProductCategoryManager, InputProductManager
 from bot.managers.catalog_manager import CatalogManager
 
 from bot.components.catalog_renderer import CategoryCatalogRenderer
@@ -46,7 +46,7 @@ async def user_start_handler(bot: Bot, fsm_storage: FSMStorage, state: FSMContex
 
 
 async def set_category_catalog_manager(catalog_manager: CatalogManager,
-                                       products_catalog_manager: ProductCategoryCatalogManager,
+                                       products_catalog_manager: ProductCategoryManager,
                                        callback_prefix: CallbackSetting):
     category_catalog = await products_catalog_manager.get_category_products()
 

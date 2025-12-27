@@ -18,7 +18,7 @@ from bot.utils.message_utils.keyboard_utils import *
 from bot.utils.filters import CallbackFilter, TypeUserFilter
 
 from bot.storage.redis import FSMStorage
-from bot.managers.product_managers import InputProductManager, ProductManager, ProductCategoryCatalogManager
+from bot.managers.product_managers import InputProductManager, ProductManager, ProductCategoryManager
 from bot.managers.catalog_manager import CatalogManager
 from bot.types.utils import CallbackSetting
 
@@ -57,21 +57,26 @@ async def input_product_field(msg: Message, fsm_storage: FSMStorage, input_produ
 
 
 @router.callback_query(CallbackFilter(scope='product', subscope='save'), TypeUserFilter(UserTypes.SELLER))
-async def save_product(_: CallbackQuery, product_manager: ProductManager, input_product_manager: InputProductManager,
+async def save_product(cb: CallbackQuery, product_manager: ProductManager, input_product_manager: InputProductManager,
                        media_consolidator: TelegramMediaLocalConsolidator, fsm_storage: FSMStorage, bot: Bot):
+    _, _, action = CallbackSetting.decode_callback(cb.data)
+
     product = await input_product_manager.get_product()
 
     if product.media_path is not None:
         objs = media_consolidator.get_obj_data(*product.media_path)
         product.media_path = await media_consolidator.save_perm_obj(objs)
 
-    await product_manager.create_product(product)
+    if product.table_id is not None:
+        await product_manager.edit_product(product)
+    else:
+        await product_manager.create_product(product, cb.from_user.id)
     await send_message(fsm_storage, bot, SUCCESSFUL_SAVE_PRODUCT)
 
 
 async def add_catalog(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
                       input_product_manager: InputProductManager, catalog_manager: CatalogManager,
-                      products_catalog_manager: ProductCategoryCatalogManager,
+                      products_catalog_manager: ProductCategoryManager,
                       media_consolidator: TelegramMediaLocalConsolidator):
     scope, subscope, action = CallbackSetting.decode_callback(cb.data)
     new_message: MessageSetting | None
@@ -105,8 +110,8 @@ async def add_catalog(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storag
 @router.callback_query(CallbackFilter(scope='product', subscope='add_catalog'), TypeUserFilter(UserTypes.SELLER))
 async def add_catalog_handler(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
                               input_product_manager: InputProductManager, catalog_manager: CatalogManager,
-                              products_catalog_manager: ProductCategoryCatalogManager,
-                      media_consolidator: TelegramMediaLocalConsolidator):
+                              products_catalog_manager: ProductCategoryManager,
+                              media_consolidator: TelegramMediaLocalConsolidator):
     await add_catalog(cb, bot, state, fsm_storage, input_product_manager, catalog_manager,
                       products_catalog_manager, media_consolidator)
 

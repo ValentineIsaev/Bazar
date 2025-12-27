@@ -11,7 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 
 from bot.managers.catalog_manager import CatalogManager
-from bot.managers.product_managers import InputProductManager, ProductCategoryCatalogManager, ProductManager
+from bot.managers.product_managers import InputProductManager, ProductCategoryManager, ProductManager
 from bot.storage.local_media_data import TelegramMediaLocalConsolidator
 from bot.utils.message_utils.message_utils import MessageSetting, send_message
 from bot.handlers.seller.templates.configs import FieldConfig
@@ -46,7 +46,7 @@ def new_callback_query(old_cb: CallbackQuery, new_callback_data: CallbackSetting
                               TypeUserFilter(UserTypes.SELLER))
 async def edit_product_handler(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
                                input_product_manager: InputProductManager, catalog_manager: CatalogManager,
-                               product_category_catalog_manager: ProductCategoryCatalogManager,
+                               products_catalog_manager: ProductCategoryManager,
                                media_consolidator: TelegramMediaLocalConsolidator):
     _, _, action = CallbackSetting.decode_callback(cb.data)
 
@@ -73,7 +73,7 @@ async def edit_product_handler(cb: CallbackQuery, bot: Bot, state: FSMContext, f
 
         new_cb = new_callback_query(cb, CallbackSetting('product', 'add_catalog', 'start'))
         await add_catalog(new_cb, bot, state, fsm_storage, input_product_manager, catalog_manager,
-                          product_category_catalog_manager, media_consolidator)
+                          products_catalog_manager, media_consolidator)
 
     elif action == 'name':
         new_state = EditProductStates.EditParam.edit_name
@@ -114,18 +114,18 @@ async def delete_product(cb: CallbackQuery, bot: Bot, fsm_storage: FSMStorage, i
 @router.callback_query(CallbackFilter(scope='product', subscope='choose_product'), TypeUserFilter(UserTypes.SELLER))
 async def choose_product(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
                          input_product_manager: InputProductManager, product_manager: ProductManager,
-                         catalog_manager: CatalogManager, product_category_catalog_manager: ProductCategoryCatalogManager,
+                         catalog_manager: CatalogManager, products_catalog_manager: ProductCategoryManager,
                          media_consolidator: TelegramMediaLocalConsolidator):
 
     async def start_choice_product():
         if not catalog_manager.is_set_require_fields:
-            user_products = product_manager.get_products_by_user(cb.message.from_user.id)
-            catalog_service = CatalogMenuService(tuple((p.table_id, p) for p in user_products), 5)
+            user_products_ = await product_manager.get_products_by_user(cb.from_user.id)
+            catalog_service = CatalogMenuService(tuple((p.table_id, p) for p in user_products_), 5)
             catalog_renderer = ChooseProductCatalogRenderer(CallbackSetting(scope, subscope, 'choice_product'))
 
             await catalog_manager.set_catalog_service(catalog_service)
             await catalog_manager.set_renderer(catalog_renderer)
-            await fsm_storage.update_value(FSMKeys.EditProduct.USER_PRODUCT_LIST, user_products)
+            await fsm_storage.update_value(FSMKeys.EditProduct.USER_PRODUCT_LIST, user_products_)
 
     scope, subscope, action = CallbackSetting.decode_callback(cb.data)
     new_state: State | None = None
@@ -153,7 +153,7 @@ async def choose_product(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_sto
 
             new_cb = new_callback_query(cb, CallbackSetting('product', 'edit', 'start'))
             await edit_product_handler(new_cb, bot, state, fsm_storage, input_product_manager, catalog_manager,
-                                       product_category_catalog_manager, media_consolidator)
+                                       products_catalog_manager, media_consolidator)
 
         elif now_state == EditProductStates.delete_product:
             new_cb = new_callback_query(cb, CallbackSetting('product', 'delete_product', 'start'))
@@ -198,7 +198,7 @@ async def choose_product(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_sto
             if await state.get_state() == EditProductStates.edit_product.state else (
             new_callback_query(cb, CallbackSetting(scope, subscope, 'start_delete')))
         await choose_product(new_cb, bot, state, fsm_storage, input_product_manager, product_manager, catalog_manager,
-                             product_category_catalog_manager, media_consolidator)
+                             products_catalog_manager, media_consolidator)
 
     if new_state is not None:
         await state.set_state(new_state)

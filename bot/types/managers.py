@@ -1,3 +1,3 @@
 from bot.managers.catalog_manager import CatalogManager
-from bot.managers.product_managers import ProductManager, ProductCategoryCatalogManager, InputProductManager
+from bot.managers.product_managers import ProductManager, ProductCategoryManager, InputProductManager
 from bot.managers.mediator_manager import MediatorManager

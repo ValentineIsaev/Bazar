@@ -14,9 +14,8 @@ class MediatorRenderer(Generic[RenderType]):
 
 class MediatorTelegramRenderer(MediatorRenderer[MessageSetting]):
     def render_chat_msgs(self, msgs: tuple[ChatMessage, ...]) -> RenderType:
-        if msgs is None:
-            text = 'Ничего нет.'
-        else:
+        text = 'Ничего нет.'
+        if msgs is not None and len(msgs) > 0:
             text = ' '.join(msg.text for msg in msgs)
         return MessageSetting(text=text, keyboard=get_callback_inline_keyboard(InlineButtonSetting(
             text='Отправить сообщение', callback='mediator_chat/msgs/send')))

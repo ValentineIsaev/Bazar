@@ -14,7 +14,7 @@ class ProductBase(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    product_id: Mapped[int]
+    product_id: Mapped[int] = mapped_column(BigInteger)
     autor_id: Mapped[str]
 
     name_product: Mapped[str]
@@ -50,7 +50,7 @@ class MediatorChatBase(Base):
 
     seller_user_id: Mapped[str]
     buyer_user_id: Mapped[str]
-    product_id: Mapped[int]
+    product_id: Mapped[int] = mapped_column(BigInteger)
 
     mediator_chat_id: Mapped[str]
     chat_name: Mapped[str]
@@ -67,6 +67,8 @@ class MediatorMessageBase(Base):
     sender_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     media_path: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=True)
     text: Mapped[str] = mapped_column(nullable=True)
+
+    is_recipient_read: Mapped[bool] = mapped_column(nullable=True, default=False)
 
 
 class RefCatalogBase(Base):

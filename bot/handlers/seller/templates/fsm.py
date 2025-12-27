@@ -25,7 +25,6 @@ class EditProductStates(StatesGroup):
         edit_photo = State()
         edit_catalog = State()
         edit_description = State()
-    complete_edit = State()
 
 
 class AddProductStates(StatesGroup):

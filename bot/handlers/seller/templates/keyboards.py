@@ -12,7 +12,12 @@ MENU_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Доба�
                                              InlineButtonSetting(text='Удалить товар',
                                                                  callback=CallbackSetting.encode_callback('product',
                                                                                           'choose_product',
-                                                                                          'start_delete')))
+                                                                                          'start_delete')),
+                                             InlineButtonSetting(text='M-chat',
+                                                                 callback=CallbackSetting.encode_callback(
+                                                                     'mediator_chat',
+                                                                     'chat',
+                                                                     'get_chats')))
 
 EDIT_PRODUCT_KEYBOARD = get_callback_inline_keyboard(InlineButtonSetting(text='Имя',
                                                                          callback=CallbackSetting.encode_callback(
