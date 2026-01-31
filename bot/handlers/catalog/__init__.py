@@ -1,0 +1,1 @@
+from .catalog import catalog_menu_router

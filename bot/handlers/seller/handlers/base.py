@@ -1,26 +1,47 @@
 from aiogram import F, Router
 from aiogram.filters import StateFilter, Command
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from bot.handlers.utils import user_start_handler
-from bot.handlers.seller.templates.configs import BASE_STATE
+from ..messages import START_TEXT_MSG
+from ..keyboards import MENU_KEYBOARD
+from ..fsm import SellerStates
 
-from bot.configs.constants import UserTypes
+from bot.constants.redis_keys import StorageKeys
+from bot.constants.callback import SELLER_MENU_CALLBACK
+from bot.constants.user_constants import TypesUser
 
-from bot.constants.callback import PASS_CALLBACK
+from bot.types.storage import FSMStorage
+from bot.types.utils import MessageSetting, CallbackSetting
 
-from bot.utils.message_utils.message_utils import MessageSetting
-from bot.storage.redis import FSMStorage
+from bot.utils.filters import CallbackFilter
 
-from bot.handlers.seller.templates.messages import START_MESSAGE
-from bot.handlers.seller.templates.keyboards import MENU_KEYBOARD
+from bot.handlers.helpers import processing_start, get_hello_text_msg, get_menu_keyboard
+
 
 router = Router()
 
+
+async def _send_seller_menu(msg: Message, user_name: str, mediator_manager, state: FSMContext,
+                            fsm_storage: FSMStorage, is_delete_msg=True):
+    other_data = 0
+    balance = 1000
+    hello_text_msg = get_hello_text_msg(user_name)
+    menu_keyboard = await get_menu_keyboard(*MENU_KEYBOARD, mediator_manager=mediator_manager,
+                                            user_id=msg.from_user.id, user_role=TypesUser.SELLER)
+    new_msg = MessageSetting(text=hello_text_msg + START_TEXT_MSG.insert((other_data, balance)), keyboard=menu_keyboard)
+
+    await processing_start(fsm_storage, msg, new_msg, state=state, new_type_user=TypesUser.SELLER,
+                           new_state=SellerStates.seller_menu, is_delete_msg=is_delete_msg)
+
+
 @router.message(Command('seller'))
-@router.callback_query(StateFilter(BASE_STATE), F.data == PASS_CALLBACK)
-async def send_seller_menu(msg: Message, state: FSMContext, fsm_storage: FSMStorage):
-    msg_data = (msg.from_user.first_name, 0, 0)
-    new_msg = MessageSetting(text=START_MESSAGE.insert(msg_data), keyboard=MENU_KEYBOARD)
-    await user_start_handler(msg.bot, fsm_storage, state, BASE_STATE, UserTypes.SELLER, new_msg)
+async def send_seller_menu_command(msg: Message, state: FSMContext, fsm_storage: FSMStorage,
+                           mediator_manager):
+    await _send_seller_menu(msg, msg.from_user.first_name, mediator_manager, state, fsm_storage)
+
+@router.callback_query(CallbackFilter(*CallbackSetting.decode_callback(SELLER_MENU_CALLBACK.callback)))
+async def send_seller_menu_callback_query(cb: CallbackQuery, state: FSMContext, fsm_storage: FSMStorage,
+                                          mediator_manager):
+    user_name = await fsm_storage.get_value(StorageKeys.USERNAME)
+    await _send_seller_menu(cb.message, user_name, mediator_manager, state, fsm_storage, is_delete_msg=False)

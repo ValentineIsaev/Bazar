@@ -4,12 +4,12 @@ from pathlib import Path
 from aiogram import Bot
 
 from .dto import LocalObjPath, TelegramMediaSaveData, MediaLocalObj
-from .base_consolidator import DataConsolidator
+from .base_consolidator import MediaConsolidator
 
 from .const import EXT, StorageType, TYPE_DATA_FROM_EXT
 
 
-class TelegramMediaLocalConsolidator(DataConsolidator):
+class TelegramMediaLocalConsolidator(MediaConsolidator):
     def __init__(self, bot: Bot, temp_path: Path, storage_path: Path):
         self._bot = bot
 

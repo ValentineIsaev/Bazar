@@ -4,7 +4,7 @@ from typing import Any
 from .dto import Obj, ObjPath, SaveDataObj
 from .const import StorageType
 
-class DataConsolidator(ABC):
+class MediaConsolidator(ABC):
     @abstractmethod
     def _download_obj(self, *objs_data: SaveDataObj, storage_type: StorageType) -> tuple[ObjPath, ...]:
         pass

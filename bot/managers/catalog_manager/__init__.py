@@ -1,1 +1,1 @@
-from .catalog import CatalogManager
+from .catalog import CatalogManager, ScrollModes

@@ -11,8 +11,7 @@ from bot.constants.redis_keys import UserSessionKeys
 from bot.storage.postgres import BaseRepository, RefCatalogBase, ProductsRepository, ProductBase
 from bot.constants import ServiceConstants
 
-from bot.managers.base import StorageManager
-from bot.utils.decorators import require_field
+from bot.managers.base import StorageManager, storage_field
 
 from bot.types.storage import LocalObjPath
 
@@ -47,7 +46,7 @@ class InputProductManager(StorageManager):
         self._product = InputProductService()
         await self._storage.update_data(**{UserSessionKeys.INPUT_PRODUCT_SERVICE: self._product})
 
-    @require_field('_product', UserSessionKeys.INPUT_PRODUCT_SERVICE)
+    @storage_field('_product', UserSessionKeys.INPUT_PRODUCT_SERVICE)
     async def add_value(self, field_name: PRODUCT_INPUT_FIELD, value) -> ValidateErrors | None:
         result = self._product.add_value(field_name, value)
         if result is not None:
@@ -55,7 +54,7 @@ class InputProductManager(StorageManager):
 
         return result
 
-    @require_field('_product', UserSessionKeys.INPUT_PRODUCT_SERVICE)
+    @storage_field('_product', UserSessionKeys.INPUT_PRODUCT_SERVICE)
     async def get_product(self) -> Product | None:
         """Getter a service for filling in data about a new product."""
         return self._product.product
@@ -86,7 +85,7 @@ class ProductManager:
             name_product=product.name_product,
             catalog=product.catalog,
             price=float(product.price),
-            media_path=[str(obj.path) for obj in product.media_path],
+            media_path=[str(obj.path) for obj in product.media_path] if product.media_path is not None else None,
             amount=product.amount,
             description=product.description
         ) for product in dto)
@@ -108,17 +107,21 @@ class ProductManager:
         product.amount = 1
         return product
 
-    async def create_product(self, product: Product, user_id):
+    async def create_product(self, product: Product, user_id) -> bool:
         product = self._processing_create_product(product, user_id)
         product_model = self.__dto_to_model(product)[0]
         await self._product_repo.create_product(product_model)
 
+        return True
+
     async def delete_product(self, product_id: int) -> None:
         await self._product_repo.delete_product(product_id)
 
-    async def edit_product(self, product: Product):
+    async def edit_product(self, product: Product) -> bool:
         model_product = self.__dto_to_model(product)[0]
         await self._product_repo.update_product(model_product)
+
+        return True
 
 
 class ProductPayManager:

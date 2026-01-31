@@ -12,10 +12,6 @@ class BaseRepository(Generic[T]):
         self._session = session
         self._model = model
 
-    async def update(self, update_model: T):
-        self._session.add(update_model)
-        await self._session.commit()
-
     async def get_all(self) -> tuple[T]:
         data = await self._session.execute(select(self._model))
         return data.scalars().all()
@@ -53,6 +49,7 @@ class ProductsRepository(BaseRepository):
             self._model.product_id == product_id
         )
         await self._session.execute(stmt)
+        await self._session.commit()
 
     async def update_product(self, product: T):
         print(product.id)
@@ -60,6 +57,7 @@ class ProductsRepository(BaseRepository):
             self._model.id == product.id
         ).values(**{k: v for k, v in product.__dict__.items() if not k.startswith('_')})
         await self._session.execute(stmt)
+        await self._session.commit()
 
 
 class ChatsMediatorRepository(BaseRepository[MediatorChatBase]):
@@ -85,6 +83,20 @@ class ChatsMediatorRepository(BaseRepository[MediatorChatBase]):
             self._model.mediator_chat_id == chat_id
         )
         await self._session.execute(stmt)
+        await self._session.commit()
+
+    async def is_chat_exist(self, chat: MediatorChatBase) -> tuple[bool, T]:
+        stmt = select(self._model).where(
+            and_(
+                self._model.seller_user_id == chat.seller_user_id,
+                self._model.product_id == chat.product_id,
+                self._model.buyer_user_id == chat.buyer_user_id
+            )
+        )
+
+        result = await self._session.execute(stmt)
+        data = result.scalars().all()
+        return bool(data), data[0] if len(data) > 0 else data
 
 
 class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
@@ -111,18 +123,34 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
         return result.scalar_one()
 
     async def get_new_msgs(self, chat_id: str, user_id: int) -> tuple[T, ...]:
-        stmt = update(self._model).where(
+        stmt = select(self._model).where(
             and_(
                 self._model.mediator_chat_id == chat_id,
                 self._model.sender_id != str(user_id),
                 self._model.is_recipient_read == False
                  )
+        )
+        msgs = await self._session.execute(stmt)
+        msgs_ids = [msg.id for msg in msgs.scalars().all()]
+
+        if not msgs_ids:
+            return ()
+
+        stmt = update(self._model).where(
+            self._model.id.in_(msgs_ids)
         ).values(
             is_recipient_read=True
-        ).returning(self._model)
-        msgs = await self._session.execute(stmt)
+        )
 
-        return tuple(msgs.scalars().all())
+        await self._session.execute(stmt)
+        await self._session.commit()
+
+        get_stmt = select(self._model).where(
+            self._model.id.in_(msgs_ids)
+        )
+        result = await self._session.execute(get_stmt)
+
+        return tuple(result.scalars().all())
 
     async def send_msg(self, msg: MediatorMessageBase):
         self._session.add(msg)
@@ -131,3 +159,10 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
     async def delete_msgs(self, chat_id: str):
         stmt = delete(self._model).where(self._model.mediator_chat_id == chat_id)
         await self._session.execute(stmt)
+        await self._session.commit()
+
+
+class ProductStatisticRepository(BaseRepository):
+    def __init__(self, session: AsyncSession):
+        super().__init__(session, ProductBase)
+

@@ -2,11 +2,7 @@ from bot.types.utils import InputMedia
 from dataclasses import dataclass
 
 from .dto import Product, ProductInputField
-from enum import Enum
-
-
-class ValidateErrors(Enum):
-    INVALID_PRICE = 'INVALID PRICE'
+from .constants import ValidateErrors
 
 
 @dataclass

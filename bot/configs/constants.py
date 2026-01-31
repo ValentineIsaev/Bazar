@@ -6,4 +6,4 @@ class UserTypes:
     ANALYST = 'analyst' # Аналитик работы бота
     DEFAULTS = 'defaults' # Пользователь, невыбравший роль
 
-ROW_BUTTON_CATALOG_MENU = 4
+ROW_BUTTON_CATALOG_MENU = 1

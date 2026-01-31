@@ -3,6 +3,8 @@ from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot.constants.user_constants import TypesUser
+
 from bot.storage.postgres.repository import ChatsMediatorRepository, MessagesMediatorRepository
 from bot.storage.postgres.repository import MediatorChatBase, MediatorMessageBase
 from bot.components.mediator_render import MediatorRenderer, RenderType
@@ -51,8 +53,8 @@ class MediatorManager(Generic[RenderType]):
                                  media=tuple(LocalObjPath(Path(path)) for path in msg.media_path)
                                  if msg.media_path is not None else None) for msg in msgs_model)
 
-    async def get_chats(self, user_id: int, user_role: str) -> tuple[Chat, ...]:
-        chats = await self._chat_repo.get_chats(user_id, user_role)
+    async def get_chats(self, user_id: int, user_role: TypesUser) -> tuple[Chat, ...]:
+        chats = await self._chat_repo.get_chats(user_id, user_role.value)
         dto_chats = self.__chat_model_to_dto(*chats)
 
         counts_updates = tuple([await self._msg_repo.get_count_new_msgs(chat.chat_id, user_id) for chat in dto_chats])
@@ -65,7 +67,6 @@ class MediatorManager(Generic[RenderType]):
 
     async def _get_new_msgs(self, chat_id: str, user_id: int) -> tuple[ChatMessage, ...]:
         msgs = await self._msg_repo.get_new_msgs(chat_id, user_id)
-        print(msgs)
         chat_msgs = self.__msgs_model_to_dto(*msgs)
         return self._service.processing_chat_msgs(chat_msgs, user_id)
 
@@ -73,11 +74,15 @@ class MediatorManager(Generic[RenderType]):
         msgs = await self._get_msgs(chat_id, user_id)
         return self._renderer.render_chat_msgs(msgs)
 
-    async def get_render_update_msgs(self, chat_id: str, user_id: int) -> RenderType:
+    async def get_render_new_msgs(self, chat_id: str, user_id: int) -> RenderType:
         msgs = await self._get_new_msgs(chat_id, user_id)
         if len(msgs) > 0:
             return self._renderer.render_chat_msgs(msgs)
         return await self.get_render_msgs(chat_id, user_id)
+
+    async def get_count_all_new_msgs(self, user_id: int, user_role: TypesUser) -> int:
+        chats = await self._chat_repo.get_chats(user_id, user_role.value)
+        return sum([await self._msg_repo.get_count_new_msgs(chat.mediator_chat_id, user_id) for chat in chats])
 
     async def delete_chat(self, chat_id: str):
         await self._chat_repo.delete_chat(chat_id)
@@ -89,7 +94,10 @@ class MediatorManager(Generic[RenderType]):
                          product_name: str) -> Chat:
         chat_data = self._service.start_chat(seller_id, buyer_id, product_id, product_name)
         new_chat = self.__chat_dict_to_model(chat_data)[0]
-        chat_model = await self._chat_repo.start_chat(new_chat)
+        is_chat_exist, chat_model = await self._chat_repo.is_chat_exist(new_chat)
+        print(is_chat_exist)
+        if not is_chat_exist:
+            chat_model = await self._chat_repo.start_chat(new_chat)
 
         return self.__chat_model_to_dto(chat_model)[0]
 

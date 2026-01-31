@@ -1,57 +1,38 @@
 import asyncio
+from asyncio import Lock
 
 from aiogram import Bot
 from aiogram.types import Message, FSInputFile, InputMediaPhoto, InputMediaVideo
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 
 from .config_obj import MessageSetting, MediaSetting
 
 # from bot.utils.cache_utils.operators import CacheMediaObj
-from bot.types.storage import TelegramMediaSaveData
-from bot.storage.redis import Storage
+from bot.types.storage import TelegramMediaSaveData, TelegramMediaLocalConsolidator, FSMStorage, Storage, LocalObjPath
 
-from bot.constants.redis_keys import UserSessionKeys, FSMKeys
+from bot.constants.redis_keys import UserSessionKeys, StorageKeys
 from bot.constants.utils_const import TypesMedia
+
+
+async def reset_media_message(storage: Storage):
+    await storage.update_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, None)
 
 
 async def delete_media_message(storage: Storage, bot: Bot):
     bots_media_message_id, chat_id = await storage.get_data(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID,
                                                               UserSessionKeys.CHAT_ID)
     if bots_media_message_id is not None:
-        if isinstance(bots_media_message_id, int):
-            await bot.delete_message(chat_id, bots_media_message_id)
-        elif isinstance(bots_media_message_id, list) or isinstance(bots_media_message_id, tuple):
-            for msg_id in bots_media_message_id:
-                await bot.delete_message(chat_id, msg_id)
+        try:
+            if isinstance(bots_media_message_id, int):
+                await bot.delete_message(chat_id, bots_media_message_id)
+            elif isinstance(bots_media_message_id, list) or isinstance(bots_media_message_id, tuple):
+                for msg_id in bots_media_message_id:
+                    await bot.delete_message(chat_id, msg_id)
+        except TelegramBadRequest as e:
+            pass
 
-        await storage.update_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID, None)
-
-
-def parse_media_data(msg: Message) -> TelegramMediaSaveData:
-    if msg.photo is not None:
-        type_media = TypesMedia.TYPE_PHOTO
-        file_id = msg.photo[-1].file_id
-    elif msg.video is not None:
-        type_media = TypesMedia.TYPE_VIDEO
-        file_id = msg.video.file_id
-    else:
-        raise ValueError('Message have not media!')
-
-    print(file_id)
-    return TelegramMediaSaveData(file_id, type_media)
-
-
-def get_saved_media_data(msg: Message) -> TelegramMediaSaveData | None:
-    if msg.photo is not None:
-        type_media = TypesMedia.TYPE_PHOTO
-        file_id = msg.photo[-1].file_id
-    elif msg.video is not None:
-        type_media = TypesMedia.TYPE_VIDEO
-        file_id = msg.video.file_id
-    else:
-        return None
-
-    return TelegramMediaSaveData(file_id, type_media)
+        await reset_media_message(storage)
 
 
 async def send_media_message(storage: Storage, bot: Bot, data: MessageSetting) -> None:

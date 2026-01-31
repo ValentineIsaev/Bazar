@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 
-from bot.dependencies import (DIMiddleware, set_product_manager, set_input_product_manager, set_catalog_manager,
+from bot.dependencies import (DIMiddleware, InputMediaMiddleWare,set_product_manager, set_input_product_manager, set_catalog_manager,
                               set_product_category_catalog_manager, SetterMediaConsolidator, set_mediator_manager)
 
 from bot.storage.postgres import SessionLocal
@@ -17,15 +17,21 @@ async def set_dependencies(dp: Dispatcher, bot: Bot):
 
     set_media_consolidator = SetterMediaConsolidator(bot, media_storage_data.TEMP_STORAGE_PATH,
                                                      media_storage_data.PERM_STORAGE_PATH)
+    media_middleware = InputMediaMiddleWare(set_media_consolidator())
 
     di_middleware = DIMiddleware(product_manager=set_product_manager,
                                  input_product_manager=set_input_product_manager,
                                  catalog_manager=set_catalog_manager,
                                  products_catalog_manager=set_product_category_catalog_manager,
                                  media_consolidator=set_media_consolidator,
-                                 mediator_manager=set_mediator_manager)
+                                 mediator_manager=set_mediator_manager,
+                                 media_middleware=lambda _: media_middleware)
+
     dp.message.middleware(di_middleware)
+    dp.message.middleware(media_middleware)
     dp.callback_query.middleware(di_middleware)
+    dp.callback_query.middleware(media_middleware)
+
 
 def clear_cache(cache_dir: Path):
     for d in cache_dir.rglob('*'):

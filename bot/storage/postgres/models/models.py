@@ -24,6 +24,9 @@ class ProductBase(Base):
     amount: Mapped[int]
     description: Mapped[str]= mapped_column(nullable=True)
 
+    creation_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=True)
+    is_sold: Mapped[bool] = mapped_column(default=True, nullable=True)
+
 
 class UserBase(Base):
     __tablename__ = 'users'

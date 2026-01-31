@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+        <meta charset="utf-8">
+        <title>ChatInfo Example
+        </title>
+        <style>
+            .productInfo {
+                background: #182533;
+                border: 3px solid #182533;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                font-size: 5vw;
+                text-align: center;
+                font-family: Arial;
+                line-height: 1.5;
+<!--                margin-bottom: 40vh;-->
+                flex: 1;
+            }
+
+            .mediaProductContainer{
+                display: grid;
+                grid-template-columns: repeat(3, 4fr);
+                margin-top: 10px;
+                margin-bottom: 20px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                border-radius: 15px;
+            }
+
+            .productContainer{
+                text-align: left;
+                margin-left: 10px;
+            }
+
+            .nameField {
+                text-align: left;
+                font-weight: bold;
+            }
+
+            .productData{
+            text-align: left;
+            margin-bottom: 30px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="nameChat">💬 Обсуждение "Parliament"</div>
+        <div class="productInfo">ℹ️ Информация о товаре:
+            <div class="mediaProductContainer">
+                <img src="../../../../Storage/Perm/AgACAgIAAxkBAAIa4GlRLk9_psSRospEl-urc-4xXLqKAAK0DmsbL9GISoX4kNk3wgAB0wEAAwIAA20AAzYE.png"
+                 class="media">
+                <img src="../../../../Storage/Perm/AgACAgIAAxkBAAIfMWlU9UcpwHU9_YUKe3IqnLWbMrLgAALWC2sbooipSiOLYvq55XQcAQADAgADeQADOAQ.png"
+                 class="media">
+                <img src="../../../../Storage/Perm/AgACAgIAAxkBAAIjamldegOpvBXL6UKXsjey2sAY66WiAALvEmsb2sXpSo5g6wMrBznCAQADAgADeQADOAQ.png"
+                 class="media">
+            </div>
+            <div class="productContainer">
+                <div>
+                    <span class="nameField">🗂 Каталог:</span>
+                    <span class="productData">Табачные изделия</span>
+                </div>
+                <div>
+                    <br>
+                    <span class="nameField">🧸 Название:</span>
+                    <span class="productData">Parliament</span>
+                </div>
+                <div>
+                    <span class="nameField">💰 Цена:</span>
+                    <span class="productData">1000.0</span>
+                </div>
+            </div>
+        </div>
+        <div class="bazarWaterMark">
+            <span>Mediator Chat</span>
+            <p>@bazar142523</p>
+        </div>
+    </body>
+</html>
+
+

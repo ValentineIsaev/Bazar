@@ -2,16 +2,17 @@ from aiogram.filters import BaseFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from bot.constants.redis_keys import FSMKeys
+from bot.constants.user_constants import TypesUser
+from bot.constants.redis_keys import StorageKeys
 from bot.types.utils import CallbackSetting
 
 
 class TypeUserFilter(BaseFilter):
-    def __init__(self, type_user: str):
+    def __init__(self, type_user: TypesUser):
         self._user = type_user
 
     async def __call__(self, event: Message | CallbackQuery, state: FSMContext):
-        type_user = await state.get_value(FSMKeys.USERTYPE)
+        type_user = await state.get_value(StorageKeys.USERTYPE)
         return type_user == self._user
 
 

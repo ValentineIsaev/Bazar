@@ -1,79 +1,67 @@
-from aiogram.filters import StateFilter
-
-from bot.constants.redis_keys import FSMKeys, UserSessionKeys
-from bot.handlers.seller.templates.messages import EDIT_PRODUCT_MESSAGE, SUCCESSFUL_DELETE_PRODUCT, \
-    DELETE_PRODUCT_MESSAGE
-from bot.handlers.seller.templates.fsm import EditProductStates
 from aiogram import Router, Bot
-
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery
+from aiogram.filters import or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 
-from bot.managers.catalog_manager import CatalogManager
-from bot.managers.product_managers import InputProductManager, ProductCategoryManager, ProductManager
-from bot.storage.local_media_data import TelegramMediaLocalConsolidator
-from bot.utils.message_utils.message_utils import MessageSetting, send_message
-from bot.handlers.seller.templates.configs import FieldConfig
-from bot.utils.filters import CallbackFilter, TypeUserFilter
-from bot.configs.constants import UserTypes
+from ..messages import *
+from ..fsm import EDIT_PRODUCT_MESSAGES, EditProductStates
+from .input_fields_product_handler import add_catalog_processing
+
+from bot.constants.redis_keys import StorageKeys
+from bot.constants.user_constants import TypesUser
+
+from bot.types.storage import TelegramMediaLocalConsolidator, FSMStorage
+from bot.types.middlewares import InputMediaMiddleWare
 from bot.types.utils import CallbackSetting
-
-from bot.components.catalog_renderer import ChooseProductCatalogRenderer, CategoryCatalogRenderer
-
-from bot.storage.redis import FSMStorage
+from bot.utils.message_utils import send_message
+from bot.utils.filters import CallbackFilter, TypeUserFilter
 
 from bot.services.catalog_service import CatalogMenuService
 from bot.services.product import Product
+from bot.managers.catalog_manager import CatalogManager
+from bot.managers.product_managers import InputProductManager, ProductCategoryManager, ProductManager
 
-from .input_fields_product_handler import (add_catalog, add_media, add_price, add_name,
-                                           add_description)
-from bot.handlers.utils import render_product_message, delete_product_message
-from ..templates.keyboards import ADD_PRODUCT_COMPLETE_KEYBOARD
-from ..templates.messages import SET_SEARCH_DATA_MESSAGE, SET_NAME_SEARCH_PRODUCT_MSG
-from ..templates.fsm import AddProductStates, EDIT_PRODUCT_MESSAGES
+from bot.components.catalog_renderer import ChooseProductCatalogRenderer, SortCategoryCatalogRenderer
+from bot.components.product_renderer import seller_product_renderer
+
 
 router = Router()
 
 
-def new_callback_query(old_cb: CallbackQuery, new_callback_data: CallbackSetting):
-    callback_cls_data = old_cb.__dict__.copy()
-    callback_cls_data['data'] = new_callback_data.callback
-    return old_cb.__class__(**callback_cls_data)
+async def _start_edit(action: str, input_product_manager: InputProductManager,
+                      media_consolidator: TelegramMediaLocalConsolidator,
+                      fsm_storage: FSMStorage, bot: Bot, state: FSMContext):
+    is_send_new = False
+    if action == 'start_edit_exist':
+        is_send_new = True
+        product = await input_product_manager.get_product()
+        product_msg = seller_product_renderer.render_product(product, media_consolidator)
+        await send_message(fsm_storage, bot, product_msg, False)
+    await state.set_state(EditProductStates.choose_param)
+    await send_message(fsm_storage, bot, EDIT_PRODUCT_MESSAGE, is_send_new)
 
 
 @router.callback_query(CallbackFilter('product','edit'),
-                              TypeUserFilter(UserTypes.SELLER))
+                              TypeUserFilter(TypesUser.SELLER))
 async def edit_product_handler(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
                                input_product_manager: InputProductManager, catalog_manager: CatalogManager,
                                products_catalog_manager: ProductCategoryManager,
-                               media_consolidator: TelegramMediaLocalConsolidator):
+                               media_consolidator: TelegramMediaLocalConsolidator,
+                               media_middleware: InputMediaMiddleWare):
     _, _, action = CallbackSetting.decode_callback(cb.data)
 
     new_msg: MessageSetting | None = None
-    new_state: State
-    if action == 'start':
-        new_state = EditProductStates.choose_param
-        new_msg = EDIT_PRODUCT_MESSAGE
-
-        product = await input_product_manager.get_product()
-        product_msg = render_product_message(product, media_consolidator=media_consolidator)
-        await send_message(fsm_storage, bot, product_msg)
-
-        product_msg_id = await fsm_storage.get_value(UserSessionKeys.BOTS_MESSAGE_ID)
-        product_media_msg_id = None if product.media_path is None else \
-            await fsm_storage.get_value(UserSessionKeys.BOTS_MEDIA_MESSAGE_ID)
-
-        await fsm_storage.update_data(**{UserSessionKeys.PRODUCT_MESSAGE_ID: product_msg_id,
-                                         UserSessionKeys.PRODUCT_MEDIA_MESSAGE_ID: product_media_msg_id})
+    new_state: State | None = None
+    is_send_new: bool = False
+    if action.startswith('start'):
+        await _start_edit(action, input_product_manager, media_consolidator, fsm_storage, bot, state)
 
     elif action == 'catalog':
         new_state = EditProductStates.EditParam.edit_catalog
         await state.set_state(new_state)
-
-        new_cb = new_callback_query(cb, CallbackSetting('product', 'add_catalog', 'start'))
-        await add_catalog(new_cb, bot, state, fsm_storage, input_product_manager, catalog_manager,
-                          products_catalog_manager, media_consolidator)
+        new_msg = await add_catalog_processing(CallbackSetting('product', 'add_catalog', 'start').callback, cb.message, state, fsm_storage, input_product_manager, catalog_manager,
+                          products_catalog_manager, media_middleware, media_consolidator)
 
     elif action == 'name':
         new_state = EditProductStates.EditParam.edit_name
@@ -95,110 +83,146 @@ async def edit_product_handler(cb: CallbackQuery, bot: Bot, state: FSMContext, f
         new_msg = EDIT_PRODUCT_MESSAGES.get(new_state)
 
     if new_msg is not None:
-        await send_message(fsm_storage, bot, new_msg)
+        await send_message(fsm_storage, bot, new_msg, is_send_new)
 
-@router.callback_query(CallbackFilter(scope='product', subscope='delete_product'), TypeUserFilter(UserTypes.SELLER))
+
+async def _start_delete(input_product_manager: InputProductManager, fsm_storage, bot: Bot,
+                        media_consolidator: TelegramMediaLocalConsolidator):
+    product = await input_product_manager.get_product()
+    await send_message(fsm_storage, bot, seller_product_renderer.render_product(product, media_consolidator), False)
+
+    await send_message(fsm_storage, bot, DELETE_PRODUCT_MESSAGE)
+
+
+@router.callback_query(CallbackFilter(scope='product', subscope='delete_product'), TypeUserFilter(TypesUser.SELLER))
 async def delete_product(cb: CallbackQuery, bot: Bot, fsm_storage: FSMStorage, input_product_manager: InputProductManager,
-                         product_manager: ProductManager):
+                         product_manager: ProductManager, media_consolidator: TelegramMediaLocalConsolidator):
     _, _, action = CallbackSetting.decode_callback(cb.data)
+    new_msg: MessageSetting | None = None
+    is_send_new = False
     if action == 'start':
-        await send_message(fsm_storage, bot, DELETE_PRODUCT_MESSAGE)
+        await _start_delete(input_product_manager, fsm_storage, bot, media_consolidator)
     elif action == 'delete':
         product = await input_product_manager.get_product()
         await product_manager.delete_product(product.product_id)
 
-        await send_message(fsm_storage, bot, SUCCESSFUL_DELETE_PRODUCT)
-        await delete_product_message(fsm_storage, bot)
+        await send_message(fsm_storage, bot, SUCCESSFUL_DELETE_PRODUCT, False)
+        is_send_new = True
+        new_msg = POST_DELETE_PRODUCT_MSG
 
+    if new_msg is not None:
+        await send_message(fsm_storage, bot, new_msg, is_send_new)
 
-@router.callback_query(CallbackFilter(scope='product', subscope='choose_product'), TypeUserFilter(UserTypes.SELLER))
-async def choose_product(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
-                         input_product_manager: InputProductManager, product_manager: ProductManager,
-                         catalog_manager: CatalogManager, products_catalog_manager: ProductCategoryManager,
-                         media_consolidator: TelegramMediaLocalConsolidator):
+def filter_by_catalog(data: tuple[int, Product], **kwargs):
+    catalog_name = kwargs.get('catalog_name')
+    return data[1].catalog == catalog_name
 
-    async def start_choice_product():
-        if not catalog_manager.is_set_require_fields:
-            user_products_ = await product_manager.get_products_by_user(cb.from_user.id)
-            catalog_service = CatalogMenuService(tuple((p.table_id, p) for p in user_products_), 5)
+async def _start_product_handler(cb: str, user_id: int, state: FSMContext, product_manager: ProductManager,
+                                 catalog_manager: CatalogManager) -> MessageSetting:
+    async def start_choice_product(mode_state: State):
+        if await state.get_state() != mode_state:
+            user_products_ = await product_manager.get_products_by_user(user_id)
+            products_ = tuple((p.table_id, p) for p in user_products_)
+
+            catalog_service = CatalogMenuService(products_, 5)
             catalog_renderer = ChooseProductCatalogRenderer(CallbackSetting(scope, subscope, 'choice_product'))
 
             await catalog_manager.set_catalog_service(catalog_service)
             await catalog_manager.set_renderer(catalog_renderer)
-            await fsm_storage.update_value(FSMKeys.EditProduct.USER_PRODUCT_LIST, user_products_)
 
-    scope, subscope, action = CallbackSetting.decode_callback(cb.data)
-    new_state: State | None = None
+            await state.set_state(mode_state)
+
+    scope, subscope, action = CallbackSetting.decode_callback(cb)
+    new_msg: MessageSetting | None = None
 
     if action == 'start_edit':
         # Choice product for edit
-        new_state = EditProductStates.edit_product
-        await start_choice_product()
-        print('edit_start')
-        await send_message(fsm_storage, bot, await catalog_manager.render_message())
+        await start_choice_product(EditProductStates.edit_product)
+        new_msg = await catalog_manager.render_message()
 
     elif action == 'start_delete':
         # Choice product for delete
-        new_state = EditProductStates.delete_product
-        await start_choice_product()
-        await send_message(fsm_storage, bot, await catalog_manager.render_message())
+        await start_choice_product(EditProductStates.delete_product)
+        new_msg = await catalog_manager.render_message()
 
-    elif action.startswith('choice_product'):
+    return new_msg
+
+@router.callback_query(or_f(CallbackFilter(scope='product', subscope='choose_product', action='start_edit'),
+                            CallbackFilter(scope='product', subscope='choose_product', action='start_delete')))
+async def start_edit_user_products(cb: CallbackQuery, state: FSMContext, product_manager: ProductManager,
+                                   catalog_manager: CatalogManager, fsm_storage: FSMStorage):
+    new_msg = await _start_product_handler(cb.data, cb.from_user.id, state, product_manager, catalog_manager)
+    if new_msg is not None: await send_message(fsm_storage, cb.bot, new_msg, False)
+
+@router.callback_query(CallbackFilter(scope='product', subscope='choose_product'), TypeUserFilter(TypesUser.SELLER))
+async def choose_product(cb: CallbackQuery, bot: Bot, state: FSMContext, fsm_storage: FSMStorage,
+                         input_product_manager: InputProductManager, catalog_manager: CatalogManager,
+                         media_consolidator: TelegramMediaLocalConsolidator):
+
+    scope, subscope, action = CallbackSetting.decode_callback(cb.data)
+    new_state: State | None
+    new_msg: MessageSetting | None
+    new_msg, new_state = None, None
+
+    if action.startswith('choice_product'):
         # Edit or Delete certain product
-        product: Product = await catalog_manager.get_catalog_by_callback(cb.data)
+        product: Product = await catalog_manager.get_catalog_by_callback(CallbackSetting(*CallbackSetting.decode_callback(cb.data)))
+        await input_product_manager.set_product(product)
 
         now_state = await state.get_state()
-        await input_product_manager.set_product(product)
-        if now_state == EditProductStates.edit_product.state:
-
-            new_cb = new_callback_query(cb, CallbackSetting('product', 'edit', 'start'))
-            await edit_product_handler(new_cb, bot, state, fsm_storage, input_product_manager, catalog_manager,
-                                       products_catalog_manager, media_consolidator)
+        if now_state == EditProductStates.edit_product:
+            await _start_edit('start_edit_exist', input_product_manager, media_consolidator, fsm_storage, bot,
+                              state)
 
         elif now_state == EditProductStates.delete_product:
-            new_cb = new_callback_query(cb, CallbackSetting('product', 'delete_product', 'start'))
-            await delete_product(new_cb, bot, fsm_storage, input_product_manager, product_manager)
-
-    elif action == 'set_choice':
-        # Set sort products
-        await send_message(fsm_storage, bot, SET_SEARCH_DATA_MESSAGE)
-
-    elif action == 'start_set_catalog':
-        # Choice catalog for sort products
-
-        products: tuple[tuple[int, Product], ...] = await catalog_manager.get_all()
-        product_users_category = set(p.catalog for (_, p) in products)
-
-        u_products = await catalog_manager.get_all()
-        await fsm_storage.update_value(FSMKeys.EditProduct.USER_PRODUCT_LIST, u_products)
-
-        catalog_category_service = CatalogMenuService(tuple(zip(tuple(range(len(product_users_category))),
-                                                                product_users_category)), 5)
-
-        await catalog_manager.set_catalog_service(catalog_category_service)
-        await catalog_manager.set_renderer(CategoryCatalogRenderer(CallbackSetting(scope, subscope, 'set_catalog')))
-
-        await send_message(fsm_storage, bot, await catalog_manager.render_message())
-
-    elif action.startswith('set_catalog'):
-        # Sort products by catalog
-
-        user_catalog = await catalog_manager.get_catalog_by_callback(cb.data)
-
-        user_products: tuple[tuple[int, Product], ...] = await fsm_storage.get_value(FSMKeys.EditProduct.USER_PRODUCT_LIST)
-        new_user_products = tuple(p for p in user_products if p[1].catalog == user_catalog)
-
-        await fsm_storage.update_value(FSMKeys.EditProduct.USER_PRODUCT_LIST, new_user_products)
-
-        await catalog_manager.set_catalog_service(CatalogMenuService(new_user_products, 1))
-        await catalog_manager.set_renderer(ChooseProductCatalogRenderer(CallbackSetting(scope, subscope,
-                                                                                        'choice_product')))
-
-        new_cb = new_callback_query(cb, CallbackSetting(scope, subscope, 'start_edit')) \
-            if await state.get_state() == EditProductStates.edit_product.state else (
-            new_callback_query(cb, CallbackSetting(scope, subscope, 'start_delete')))
-        await choose_product(new_cb, bot, state, fsm_storage, input_product_manager, product_manager, catalog_manager,
-                             products_catalog_manager, media_consolidator)
+            await _start_delete(input_product_manager, fsm_storage, bot, media_consolidator)
 
     if new_state is not None:
         await state.set_state(new_state)
+
+    if new_msg is not None:
+        await send_message(fsm_storage, bot, new_msg, False)
+
+@router.callback_query(CallbackFilter(scope='seller_product_catalog', subscope='filtering'))
+async def filter_product_catalog(cb: CallbackQuery, bot: Bot, catalog_manager: CatalogManager,
+                                 fsm_storage: FSMStorage, state: FSMContext, product_manager: ProductManager):
+    async def filter_catalog(filter_name: str, **filter_data) -> MessageSetting:
+        user_product_catalog = await fsm_storage.get_value(StorageKeys.EditProduct.USER_PRODUCT_CATALOG)
+        await catalog_manager.set_catalog_service(user_product_catalog)
+
+        await catalog_manager.filter_catalog(filter_name, **filter_data)
+        await catalog_manager.set_renderer(ChooseProductCatalogRenderer(CallbackSetting(scope, subscope,
+                                                                                        'choice_product')))
+
+        new_cb = (CallbackSetting(scope, subscope, 'start_edit') if await state.get_state() == EditProductStates.edit_product \
+            else CallbackSetting(scope, subscope, 'start_delete')).callback
+        return await _start_product_handler(new_cb, cb.from_user.id, state, product_manager, catalog_manager)
+
+    scope, subscope, action = CallbackSetting.decode_callback(cb.data)
+    new_msg: MessageSetting|None = None
+    if action == 'start':
+        # Send filters
+        new_msg = SET_SEARCH_DATA_MESSAGE
+        if not await catalog_manager.is_set_filters():
+            await catalog_manager.set_filters({'catalog': filter_by_catalog})
+
+    elif action == 'set_catalog_filter':
+        products = await catalog_manager.get_row_catalog()
+        product_users_category = set(p.catalog for _, p in products)
+        catalog_category_service = CatalogMenuService(tuple(zip(tuple(range(len(product_users_category))),
+                                                                product_users_category)), 5)
+
+        await fsm_storage.update_value(StorageKeys.EditProduct.USER_PRODUCT_CATALOG,
+                                       await catalog_manager.get_catalog_service())
+        await catalog_manager.set_catalog_service(catalog_category_service)
+        await catalog_manager.set_renderer(SortCategoryCatalogRenderer(CallbackSetting(scope, subscope, 'filter_by_catalog')))
+
+        new_msg = await catalog_manager.render_message()
+
+    elif action.startswith('filter_by_catalog'):
+        user_catalog = await catalog_manager.get_catalog_by_callback(
+            CallbackSetting(*CallbackSetting.decode_callback(cb.data)))
+        new_msg = await filter_catalog('catalog', catalog_name=user_catalog)
+
+    if new_msg is not None:
+        await send_message(fsm_storage, bot, new_msg, False)

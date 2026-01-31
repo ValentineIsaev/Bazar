@@ -3,6 +3,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 class BuyerStates(StatesGroup):
     main_menu = State()
+    scroll_products = State()
 
     class HistoryProduct(StatesGroup):
         choice_product = State()
