@@ -81,6 +81,11 @@ class MessageSetting:
     def parse_mode(self):
         return self._parse_mode.value if self._parse_mode is not None else None
 
+    @staticmethod
+    def escape_markdown(text: str) -> str:
+        escape_chars = r'_*[]()~`>#+-=|{}.!'
+        return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+
     @property
     def text(self):
         return self._text
@@ -92,7 +97,7 @@ class MessageSetting:
     def _markdown_escape(self, text: str) -> str:
         result = ''
         for char in text:
-            if char in ('.', '!') and result[-1] != '\\':
+            if char in ('.', '!', '-', '+') and result[-1] != '\\':
                 result += '\\'
             result += char
         return result
@@ -103,6 +108,7 @@ class MessageSetting:
                 return self._markdown_escape(text)
             return text
         return None
+
 
 class TextTemplate:
     def __init__(self, text: str):

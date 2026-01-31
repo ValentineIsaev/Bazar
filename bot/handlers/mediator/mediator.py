@@ -27,15 +27,13 @@ from bot.components.catalog_renderer import MediatorChatsRenderer
 
 mediator_router = Router()
 
-async def start_chat(fsm_storage: FSMStorage, mediator_manager: MediatorManager[MessageSetting], user_id: int) -> Chat:
+async def start_chat(fsm_storage: FSMStorage, mediator_manager: MediatorManager[MessageSetting], user_id: int):
     product: Product = await fsm_storage.get_value(StorageKeys.TEMP_PRODUCT)
     chat = await mediator_manager.start_chat(product.autor_id,
                                              user_id,
                                              product.product_id,
                                              product.name_product)
-    await fsm_storage.update_value(StorageKeys.MEDIATOR_CHAT, chat)
-
-    return chat
+    await mediator_manager.set_chat(chat)
 
 
 @mediator_router.callback_query(CallbackFilter('mediator_chat', 'chat'))
@@ -56,8 +54,8 @@ async def chat_processing(cb: CallbackQuery, mediator_manager: MediatorManager[M
     user_role: TypesUser = await fsm_storage.get_value(StorageKeys.USERTYPE)
     new_msg: MessageSetting | None = None
     if action == 'start':
-        chat = await start_chat(fsm_storage, mediator_manager, user_id)
-        new_msg = await mediator_manager.get_render_msgs(chat.chat_id, user_id)
+        await start_chat(fsm_storage, mediator_manager, user_id)
+        new_msg = await mediator_manager.get_render_msgs(user_id)
     elif action == 'get_chats':
         await get_chats()
         new_msg = await catalog_manager.render_message()
@@ -86,11 +84,11 @@ async def msgs_processing(cb: CallbackQuery, mediator_manager: MediatorManager[M
 
     elif action.startswith('get_updates'):
         selected_chat: Chat = await catalog_manager.get_catalog_by_callback(CallbackSetting(*CallbackSetting.decode_callback(cb.data)))
-        await fsm_storage.update_value(StorageKeys.MEDIATOR_CHAT, selected_chat)
-        new_msg = await mediator_manager.get_render_new_msgs(selected_chat.chat_id, user_id)
+        await mediator_manager.set_chat(selected_chat)
+        new_msg = await mediator_manager.get_render_msgs(user_id)
+        # new_msg = await mediator_manager.get_render_new_msgs(selected_chat.chat_id, user_id)
     elif action == 'get_all':
-        selected_chat: Chat = await fsm_storage.get_value(StorageKeys.MEDIATOR_CHAT)
-        new_msg = await mediator_manager.get_render_msgs(selected_chat.chat_id, user_id)
+        new_msg = await mediator_manager.get_render_msgs(user_id)
 
     if new_msg is not None:
         await send_message(fsm_storage, cb.bot, new_msg, False)
@@ -99,7 +97,7 @@ async def msgs_processing(cb: CallbackQuery, mediator_manager: MediatorManager[M
 @mediator_router.callback_query(CallbackFilter('mediator_chat', 'send_answer'))
 async def send_answer(cb: CallbackQuery, fsm_storage: FSMStorage, mediator_manager: MediatorManager,
                       media_consolidator: TelegramMediaLocalConsolidator, state: FSMContext):
-    await state.set_state(MediatorStates.enter_new_msg)
+    await state.set_state(MediatorStates.enter_new_answer)
 
     await start_chat(fsm_storage, mediator_manager, cb.from_user.id)
 
@@ -110,7 +108,7 @@ async def send_answer(cb: CallbackQuery, fsm_storage: FSMStorage, mediator_manag
     await send_message(fsm_storage, cb.bot, INPUT_MEDIATOR_MSG)
 
 
-@mediator_router.message(StateFilter(MediatorStates.enter_new_msg))
+@mediator_router.message(StateFilter(MediatorStates.enter_new_msg, MediatorStates.enter_new_answer))
 async def send_msg(msg: Message, media_consolidator: TelegramMediaLocalConsolidator,
                    mediator_manager: MediatorManager[MessageSetting], fsm_storage: FSMStorage,
                    state: FSMContext):
@@ -129,7 +127,8 @@ async def send_msg(msg: Message, media_consolidator: TelegramMediaLocalConsolida
                                                          text=text, media=path))
     if not result:
         await send_message(fsm_storage, msg.bot, SUCCESSFUL_SEND_ANSWER_MSG)
-        reply_msg = POST_SEND_MSG
+        reply_msg = POST_SEND_MSG if await state.get_state() == MediatorStates.enter_new_answer else \
+            await mediator_manager.get_render_msgs(msg.from_user.id)
         await state.set_state(MediatorStates.check_chat)
     else:
         reply_msg = ERROR_ENTERS_REPLY_MSGS.get(result)

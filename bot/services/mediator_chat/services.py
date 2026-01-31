@@ -12,9 +12,9 @@ class MediatorService:
     def processing_chat_msgs(self, msgs: tuple[ChatMessage, ...], user_id: int) -> tuple[ChatMessage, ...]:
         for msg in msgs:
             if msg.sender_id == user_id:
-                msg.is_my_message = True
+                msg.is_self = True
                 continue
-            msg.is_my_message = False
+            msg.is_self = False
         return msgs
 
     def processing_chats_list(self, count_updates: tuple[int, ...], chats: tuple[Chat, ...]) -> tuple[Chat, ...]:

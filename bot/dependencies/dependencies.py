@@ -38,8 +38,9 @@ mediator_service = MediatorService()
 mediator_renderer = MediatorTelegramRenderer()
 def set_mediator_manager(data: dict):
     session = data['db_session']
+    storage = data['fsm_storage']
 
-    return MediatorManager[MessageSetting](session, mediator_renderer, mediator_service)
+    return MediatorManager[MessageSetting](session, storage, mediator_renderer, mediator_service)
 
 class SetterMediaConsolidator:
     def __init__(self, bot: Bot, temp_storage_path: Path, perm_storage_path: Path):

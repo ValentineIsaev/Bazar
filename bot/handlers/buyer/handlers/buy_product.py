@@ -76,6 +76,8 @@ async def buy_product_handler(cb: CallbackQuery, product_manager: ProductManager
         await send_text_message(fsm_storage, cb.bot,
                                 buyer_product_renderer.render_product(temp_product, media_consolidator),
                                 False)
+    elif action.startswith('start-by'):
+        pass
     elif action == 'back_product':
         await state.set_state(BuyerStates.scroll_products)
         await send_message(fsm_storage, cb.bot, buyer_product_renderer.render_product(temp_product, media_consolidator), False)

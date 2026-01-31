@@ -30,16 +30,13 @@ class Chat:
 @dataclass
 class ChatMessage:
     chat_id: str
-
     sender_id: int
-
     text: str
-
     table_msg_id: int = None
     date: str = None
     media: tuple[LocalObjPath, ...] = None
 
-    is_my_message: bool = None
+    is_self: bool = None
 
 
 @dataclass

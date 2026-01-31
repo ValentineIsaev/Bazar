@@ -98,6 +98,14 @@ class ChatsMediatorRepository(BaseRepository[MediatorChatBase]):
         data = result.scalars().all()
         return bool(data), data[0] if len(data) > 0 else data
 
+    async def get_chat_by_id(self, chat_id: str) -> MediatorChatBase:
+        stmt = select(self._model).where(
+            self._model.mediator_chat_id == chat_id
+        )
+        result = await self._session.execute(stmt)
+
+        return tuple(result.scalars().all())[0]
+
 
 class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
     def __init__(self, session: AsyncSession):
@@ -106,9 +114,11 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
     async def get_chat_msgs(self, chat_id: str) -> tuple[T, ...]:
         stmt = select(self._model).where(
             self._model.mediator_chat_id == chat_id
+        ).order_by(
+            self._model.sender_date
         )
-        result = await self._session.execute(stmt)
 
+        result = await self._session.execute(stmt)
         return tuple(result.scalars().all())
 
     async def get_count_new_msgs(self, chat_id: str, user_id: int) -> int:
@@ -122,22 +132,13 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
         result = await self._session.execute(stmt)
         return result.scalar_one()
 
-    async def get_new_msgs(self, chat_id: str, user_id: int) -> tuple[T, ...]:
-        stmt = select(self._model).where(
+    async def recipient_msgs(self, msgs_ids: list[int, ...], user_id: int):
+        stmt = update(self._model).where(
             and_(
-                self._model.mediator_chat_id == chat_id,
+                self._model.id.in_(msgs_ids),
                 self._model.sender_id != str(user_id),
                 self._model.is_recipient_read == False
-                 )
-        )
-        msgs = await self._session.execute(stmt)
-        msgs_ids = [msg.id for msg in msgs.scalars().all()]
-
-        if not msgs_ids:
-            return ()
-
-        stmt = update(self._model).where(
-            self._model.id.in_(msgs_ids)
+            )
         ).values(
             is_recipient_read=True
         )
@@ -145,14 +146,46 @@ class MessagesMediatorRepository(BaseRepository[MediatorMessageBase]):
         await self._session.execute(stmt)
         await self._session.commit()
 
-        get_stmt = select(self._model).where(
-            self._model.id.in_(msgs_ids)
+    async def get_new_msgs(self, chat_id: str, user_id: int) -> tuple[T, ...]:
+        stmt = select(self._model).where(
+            and_(
+                self._model.mediator_chat_id == chat_id,
+                self._model.sender_id != str(user_id),
+                self._model.is_recipient_read == False
+                 )
+        ).order_by(
+            self._model.sender_date
         )
-        result = await self._session.execute(get_stmt)
+        msgs = await self._session.execute(stmt)
 
-        return tuple(result.scalars().all())
+        if msgs:
+            return tuple(msgs.scalar().all())
+        return ()
 
-    async def send_msg(self, msg: MediatorMessageBase):
+        # get_stmt = select(self._model).where(
+        #     self._model.id.in_(msgs_ids)
+        # )
+        # result = await self._session.execute(get_stmt)
+
+
+    async def send_msg(self, msg: MediatorMessageBase, chat_limit: int=None):
+        if chat_limit is not None:
+            chat_id = msg.mediator_chat_id
+            stmt = select(self._model).where(
+                self._model.mediator_chat_id == chat_id
+            ).order_by(
+                self._model.sender_date
+            )
+            result = await self._session.execute(stmt)
+
+            chat_msgs = tuple(result.scalars().all())
+
+            if len(chat_msgs) >= chat_limit:
+                delete_stmt = delete(self._model).where(
+                    self._model.id == chat_msgs[0].id
+                )
+                await self._session.execute(delete_stmt)
+
         self._session.add(msg)
         await self._session.commit()
 

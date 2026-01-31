@@ -3,7 +3,11 @@ from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot.managers.base import StorageManager, storage_field, set_storage_field
+
+from bot.constants.redis_keys import StorageKeys
 from bot.constants.user_constants import TypesUser
+from bot.services.mediator_chat.dto import ErrorSendMessage
 
 from bot.storage.postgres.repository import ChatsMediatorRepository, MessagesMediatorRepository
 from bot.storage.postgres.repository import MediatorChatBase, MediatorMessageBase
@@ -12,16 +16,22 @@ from bot.components.mediator_render import MediatorRenderer, RenderType
 from bot.services.mediator_chat import MediatorService
 
 from bot.services.mediator_chat import Chat, ChatMessage
-from bot.types.storage import LocalObjPath
+from bot.types.storage import LocalObjPath, Storage
 
-class MediatorManager(Generic[RenderType]):
-    def __init__(self, session: AsyncSession, renderer: MediatorRenderer[RenderType],
+class MediatorManager(Generic[RenderType], StorageManager):
+    _CHAT_LIMIT_MSGS = 10
+
+    def __init__(self, session: AsyncSession, storage_session: Storage, renderer: MediatorRenderer[RenderType],
                  mediator_service: MediatorService):
+        super().__init__(storage_session)
+
         self._chat_repo = ChatsMediatorRepository(session)
         self._msg_repo = MessagesMediatorRepository(session)
 
         self._renderer = renderer
         self._service = mediator_service
+
+        self._chat: Chat = None
 
     def __chat_dict_to_model(self, *chats: dict) -> tuple[MediatorChatBase, ...]:
         return tuple(MediatorChatBase(seller_user_id=str(chat.get('seller_id')),
@@ -60,25 +70,36 @@ class MediatorManager(Generic[RenderType]):
         counts_updates = tuple([await self._msg_repo.get_count_new_msgs(chat.chat_id, user_id) for chat in dto_chats])
         return self._service.processing_chats_list(counts_updates, dto_chats)
 
-    async def _get_msgs(self, chat_id: str, user_id: int) -> tuple[ChatMessage, ...]:
-        msgs = await self._msg_repo.get_chat_msgs(chat_id)
+    @storage_field('_chat', StorageKeys.MEDIATOR_CHAT)
+    async def _get_msgs(self, user_id: int) -> tuple[ChatMessage, ...]:
+        msgs = await self._msg_repo.get_chat_msgs(self._chat.chat_id)
         chat_msgs = self.__msgs_model_to_dto(*msgs)
+        await self._msg_repo.recipient_msgs(
+            [msg.id for msg in msgs if msg.sender_id != user_id and msg.is_recipient_read == False], user_id)
         return self._service.processing_chat_msgs(chat_msgs, user_id)
 
-    async def _get_new_msgs(self, chat_id: str, user_id: int) -> tuple[ChatMessage, ...]:
-        msgs = await self._msg_repo.get_new_msgs(chat_id, user_id)
+    @storage_field('_chat', StorageKeys.MEDIATOR_CHAT)
+    async def _get_new_msgs(self, user_id: int) -> tuple[ChatMessage, ...]:
+        msgs = await self._msg_repo.get_new_msgs(self._chat.chat_id, user_id)
         chat_msgs = self.__msgs_model_to_dto(*msgs)
+        await self._msg_repo.recipient_msgs(
+            [msg.id for msg in msgs if msg.sender_id != user_id and msg.is_recipient_read == False], user_id)
         return self._service.processing_chat_msgs(chat_msgs, user_id)
 
-    async def get_render_msgs(self, chat_id: str, user_id: int) -> RenderType:
-        msgs = await self._get_msgs(chat_id, user_id)
-        return self._renderer.render_chat_msgs(msgs)
+    @storage_field('_chat', StorageKeys.MEDIATOR_CHAT)
+    async def _render_msgs(self, msgs: tuple[ChatMessage, ...], user_id: int) -> RenderType:
+        user_role = TypesUser.BUYER if self._chat.buyer_user_id == user_id else TypesUser.SELLER
+        return self._renderer.render_chat_msgs(msgs, self._chat, user_role)
 
-    async def get_render_new_msgs(self, chat_id: str, user_id: int) -> RenderType:
-        msgs = await self._get_new_msgs(chat_id, user_id)
+    async def get_render_msgs(self, user_id: int) -> RenderType:
+        msgs = await self._get_msgs(user_id)
+        return await self._render_msgs(msgs, user_id)
+
+    async def get_render_new_msgs(self, user_id: int) -> RenderType:
+        msgs = await self._get_new_msgs(user_id)
         if len(msgs) > 0:
-            return self._renderer.render_chat_msgs(msgs)
-        return await self.get_render_msgs(chat_id, user_id)
+            return await self._render_msgs(msgs, user_id)
+        return await self.get_render_msgs(user_id)
 
     async def get_count_all_new_msgs(self, user_id: int, user_role: TypesUser) -> int:
         chats = await self._chat_repo.get_chats(user_id, user_role.value)
@@ -105,6 +126,10 @@ class MediatorManager(Generic[RenderType]):
         result_msg = self._service.processing_send_msg(msg)
         if not result_msg.is_error:
             msg_base = self.__msgs_dto_to_model(msg)[0]
-            await self._msg_repo.send_msg(msg_base)
+            await self._msg_repo.send_msg(msg_base, chat_limit=self._CHAT_LIMIT_MSGS)
             return ''
         return result_msg.error
+
+    @set_storage_field('_chat', StorageKeys.MEDIATOR_CHAT)
+    async def set_chat(self, chat: Chat):
+        self._chat = chat
